@@ -1,0 +1,70 @@
+@startuml
+
+package Oxalis {
+
+skinparam package {
+    BorderColor<<emphasize>> red
+}
+    package oxalis.outbound  <<emphasize>> #salmon {
+        class Transmitter
+        class TransmissionResponse {
+            byte[] getRemEvidenceBytes();
+            // AS2 MDN
+            byte[] getNativeEvidenceBytes();
+        }
+        note right of TransmissionResponse
+            The REM evidence and the
+            AS2 MDN must be persisted
+        end note
+    }
+    package oxalis.inbound {
+        class AS2Servlet
+    }
+
+    package oxalis.as2 {
+        class InboundMessageReceiver
+    }
+    package oxalis.persistence #lightgrey {
+        class MessageRepository
+        class RawStatisticsRepository
+        class QueueRepository
+        class As2MessageSender
+    }
+}
+
+package Ringo {
+    package Ringo-standalone {
+        class OxalisDocumentSender
+        class SendQueuedMessagesUseCase
+    }
+}
+
+package OxalisDBMS <<Database>> {
+    class outboundQueue
+    class message
+    class RawStatistics
+}
+
+SendQueuedMessagesUseCase --> OxalisDocumentSender
+SendQueuedMessagesUseCase --> MessageRepository : < (2)read\n
+note on link
+    Reads metadata
+    for each message found in
+    the outbound queue
+end note
+OxalisDocumentSender --> Transmitter
+SendQueuedMessagesUseCase -> QueueRepository : "(1)"
+QueueRepository --> outboundQueue
+
+RawStatisticsRepository --> RawStatistics
+MessageRepository <-- message
+Transmitter --> RawStatisticsRepository : "(3) write"
+Transmitter --> As2MessageSender : "(4)"
+
+
+AS2Servlet -> InboundMessageReceiver
+InboundMessageReceiver --> MessageRepository : write >
+InboundMessageReceiver --> RawStatisticsRepository : write >
+
+Transmitter -> TransmissionResponse : creates >
+@enduml
