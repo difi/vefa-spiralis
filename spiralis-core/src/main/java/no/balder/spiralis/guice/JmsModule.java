@@ -3,9 +3,6 @@ package no.balder.spiralis.guice;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-import no.balder.spiralis.JmsConsumer;
-import no.balder.spiralis.QueueConstant;
 import org.apache.activemq.ActiveMQConnectionFactory;
 
 import javax.jms.*;
@@ -25,7 +22,7 @@ public class JmsModule extends AbstractModule
 
     @Provides
     @Singleton
-    QueueConnection provideActiveMQConnection(ActiveMQConnectionFactory connectionFactory) {
+    protected QueueConnection provideActiveMQConnection(ActiveMQConnectionFactory connectionFactory) {
 
         try {
             return connectionFactory.createQueueConnection();
@@ -37,7 +34,7 @@ public class JmsModule extends AbstractModule
 
     @Provides
     @Singleton
-    ActiveMQConnectionFactory provideActiveMQConnectionFactory() {
+    protected ActiveMQConnectionFactory provideActiveMQConnectionFactory() {
         return new ActiveMQConnectionFactory();
     }
 

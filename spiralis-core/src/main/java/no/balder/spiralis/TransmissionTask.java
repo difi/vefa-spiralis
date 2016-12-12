@@ -12,10 +12,8 @@ import eu.peppol.outbound.transmission.Transmitter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.jms.*;
 import javax.jms.IllegalStateException;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,58 +22,39 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author steinar
  *         Date: 05.12.2016
  *         Time: 16.55
  */
-public class TransmissionTask implements Runnable {
+public class TransmissionTask extends AbstractTask {
 
     public static final Logger log = LoggerFactory.getLogger(TransmissionTask.class);
 
     private final OxalisOutboundComponent oxalisOutboundComponent;
-    private final JmsConsumer jmsConsumer;
-    private final AtomicInteger messageCounter;
-    private final MessageConsumer messageConsumer;
+    private final ConsumerAdapter<OutboundTransmissionRequest> consumer;
+    private final AtomicLong messageCounter = new AtomicLong(0);
 
-    public TransmissionTask(OxalisOutboundComponent oxalisOutboundComponent, JmsConsumer jmsConsumer, AtomicInteger messageCounter) {
-
+    public TransmissionTask(OxalisOutboundComponent oxalisOutboundComponent, Session session, ConsumerAdapter<OutboundTransmissionRequest> consumer) {
+        super(session);
         this.oxalisOutboundComponent = oxalisOutboundComponent;
-        this.jmsConsumer = jmsConsumer;
-        messageConsumer = jmsConsumer.getMessageConsumer();
-
-        this.messageCounter = messageCounter;
+        this.consumer = consumer;
     }
 
     @Override
-    public void run() {
+    void processNextInputItem() throws JMSException {
 
+        TransmissionRequestBuilder requestBuilder = oxalisOutboundComponent.getTransmissionRequestBuilder();
 
-        try {
-            while (!Thread.currentThread().isInterrupted()) {
-                processMessage();
-                messageCounter.incrementAndGet();
-            }
-        } catch (JMSException e) {
-            log.error("Unable to receive message " + e.getMessage(), e);
-        }
-    }
-
-    void processMessage() throws JMSException {
-
-
-        TransmissionRequestBuilder requestBuilder =
-                oxalisOutboundComponent.getTransmissionRequestBuilder();
-
-        Message message = messageConsumer.receive();
-        OutboundTransmissionRequest req = MapMessageTransformer.valueOf(message);
+        OutboundTransmissionRequest request = consumer.receive();
 
         InputStream inputStream = null;
         try {
-            inputStream = Files.newInputStream(Paths.get(req.getPayloadUri()));
+            inputStream = Files.newInputStream(Paths.get(request.getPayloadUri()));
         } catch (IOException e) {
-            throw new IllegalStateException("Unable to open file " + req.getPayloadUri());
+            throw new IllegalStateException("Unable to open file " + request.getPayloadUri());
         }
 
   /*      URL endPointUrl;
@@ -87,11 +66,11 @@ public class TransmissionTask implements Runnable {
 */
 
         TransmissionRequest transmissionRequest = requestBuilder
-                .messageId(req.getMessageId())
-                .documentType(PeppolDocumentTypeId.valueOf(req.getDocumentTypeId()))
-                .processType(PeppolProcessTypeId.valueOf(req.getProcessTypeId()))
-                .sender(new ParticipantId(req.getSender()))
-                .receiver(new ParticipantId(req.getReceiver()))
+                .messageId(request.getMessageId())
+                .documentType(PeppolDocumentTypeId.valueOf(request.getDocumentTypeId()))
+                .processType(PeppolProcessTypeId.valueOf(request.getProcessTypeId()))
+                .sender(new ParticipantId(request.getSender()))
+                .receiver(new ParticipantId(request.getReceiver()))
                 .payLoad(inputStream)
 //                .overrideAs2Endpoint(endPointUrl, "AP_007")
                 .build();

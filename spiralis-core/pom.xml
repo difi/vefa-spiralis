@@ -40,7 +40,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-client</artifactId>
+            <artifactId>activemq-all</artifactId>
         </dependency>
 
         <dependency>

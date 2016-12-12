@@ -2,11 +2,16 @@ package no.balder.spiralis;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import eu.peppol.persistence.guice.RepositoryModule;
 import eu.peppol.persistence.test.TestInMemoryDatabaseModule;
-import no.balder.spiralis.guice.JmsModule;
+import org.apache.activemq.ActiveMQConnectionFactory;
 import org.testng.IModuleFactory;
 import org.testng.ITestContext;
+
+import javax.jms.Connection;
+import javax.jms.JMSException;
 
 /**
  * @author steinar
@@ -25,7 +30,25 @@ public class TestModuleFactory implements IModuleFactory {
         protected void configure() {
             binder().install(new RepositoryModule());
             binder().install(new TestInMemoryDatabaseModule());
-            binder().install(new JmsModule());
+        }
+
+
+        @Singleton
+        @Provides
+        protected ActiveMQConnectionFactory provideActiveMQConnectionFactory() {
+            ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false");
+            factory.setTrustAllPackages(true);
+
+            return factory;
+        }
+
+        @Provides
+        protected Connection provideJmsConnection(ActiveMQConnectionFactory connectionFactory) {
+            try {
+                return connectionFactory.createConnection();
+            } catch (JMSException e) {
+                throw new IllegalStateException("Unable to create connection " + e.getMessage(), e);
+            }
         }
     }
 }
