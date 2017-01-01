@@ -79,18 +79,18 @@ public class AdapterTest {
      * @throws JMSException
      */
     @Test
-    public void testWriteReadWithAdapter() throws JMSException {
+    public void testWriteReadWithAdapter() throws JMSException, InterruptedException {
 
         String queueName = "UNIT.TEST2";
 
-        ProducerAdapterImpl<OutboundTransmissionRequest> producer = new ProducerAdapterImpl<>(session, queueName);
+        ProducerAdapterImpl<OutboundTransmissionRequest> producer = new ProducerAdapterImpl<>(session, new Place(queueName));
 
         OutboundTransmissionRequest sendt = ObjectMother.sampleOutboundTransmissionRequest();
         producer.send(sendt);
 
         connection.start();
 
-        ConsumerAdapterImpl<OutboundTransmissionRequest> consumer = new ConsumerAdapterImpl<>(session, queueName);
+        ConsumerAdapterImpl<OutboundTransmissionRequest> consumer = new ConsumerAdapterImpl<>(session, new Place(queueName));
         OutboundTransmissionRequest received = consumer.receive();
 
         assertEquals(received, sendt);

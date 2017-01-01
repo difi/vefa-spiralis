@@ -21,6 +21,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -35,16 +36,22 @@ public class TransmissionTask extends AbstractTask {
 
     private final OxalisOutboundComponent oxalisOutboundComponent;
     private final ConsumerAdapter<OutboundTransmissionRequest> consumer;
-    private final AtomicLong messageCounter = new AtomicLong(0);
+    private final Optional<URL> overrideEndPointUrl;
 
     public TransmissionTask(OxalisOutboundComponent oxalisOutboundComponent, Session session, ConsumerAdapter<OutboundTransmissionRequest> consumer) {
+        this(oxalisOutboundComponent, session, consumer, null);
+    }
+
+    public TransmissionTask(OxalisOutboundComponent oxalisOutboundComponent, Session session, ConsumerAdapter<OutboundTransmissionRequest> consumer, URL overrideEndPointUrl) {
         super(session);
         this.oxalisOutboundComponent = oxalisOutboundComponent;
         this.consumer = consumer;
+        this.overrideEndPointUrl = Optional.ofNullable(overrideEndPointUrl);
+
     }
 
     @Override
-    void processNextInputItem() throws JMSException {
+    void processNextInputItem() throws JMSException, InterruptedException {
 
         TransmissionRequestBuilder requestBuilder = oxalisOutboundComponent.getTransmissionRequestBuilder();
 
@@ -57,33 +64,33 @@ public class TransmissionTask extends AbstractTask {
             throw new IllegalStateException("Unable to open file " + request.getPayloadUri());
         }
 
-  /*      URL endPointUrl;
-        try {
-             endPointUrl = new URL("https://ap.hafslundtellier.no/oxalis/as2");
-        } catch (MalformedURLException e) {
-            throw new IllegalStateException("Invalid url");
-        }
-*/
 
-        TransmissionRequest transmissionRequest = requestBuilder
+        log.debug("MessageId to transmit is " + request.getMessageId());
+
+        TransmissionRequestBuilder builder = requestBuilder
                 .messageId(request.getMessageId())
                 .documentType(PeppolDocumentTypeId.valueOf(request.getDocumentTypeId()))
                 .processType(PeppolProcessTypeId.valueOf(request.getProcessTypeId()))
                 .sender(new ParticipantId(request.getSender()))
                 .receiver(new ParticipantId(request.getReceiver()))
-                .payLoad(inputStream)
-//                .overrideAs2Endpoint(endPointUrl, "AP_007")
-                .build();
+                .payLoad(inputStream);
+
+        if (overrideEndPointUrl.isPresent()) {
+            builder.overrideAs2Endpoint(overrideEndPointUrl.get(), "AP_OVERRIDE");
+        }
+
+        TransmissionRequest transmissionRequest = builder.build();
+
 
         Transmitter simpleTransmitter = oxalisOutboundComponent.getSimpleTransmitter();
         try {
             TransmissionResponse transmissionResponse = simpleTransmitter.transmit(transmissionRequest);
+            long processed = processCount.incrementAndGet();
             // Now handle the responses
 
         } catch (OxalisTransmissionException e) {
             throw new IllegalStateException("Unable to transmit " + transmissionRequest);
         }
-
 
     }
 }

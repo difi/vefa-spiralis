@@ -5,10 +5,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.jms.JMSException;
 import javax.jms.Session;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
- *
- *
  * @author steinar
  *         Date: 07.12.2016
  *         Time: 18.27
@@ -17,10 +16,12 @@ public abstract class AbstractTask implements Task {
 
 
     public static final Logger log = LoggerFactory.getLogger(AbstractTask.class);
-    private final Session queueSession;
+    private final Session session;
+    protected final AtomicLong processCount = new AtomicLong(0);
 
-    public AbstractTask(Session queueSession) {
-        this.queueSession = queueSession;
+
+    public AbstractTask(Session session) {
+        this.session = session;
     }
 
     @Override
@@ -29,11 +30,15 @@ public abstract class AbstractTask implements Task {
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 processNextInputItem();
+                session.commit();
             }
+        } catch (InterruptedException e) {
+            log.info("Shutting down task due to interruption...");
         } catch (Exception e) {
-            log.error("Error during processing of message. " + e.getMessage(), e);
+
+            log.error("Error during processing of message: " + e.getMessage(), e);
             try {
-                queueSession.rollback();
+                session.rollback();
             } catch (JMSException e1) {
                 log.error("Unable to rollback JMS session: " + e.getMessage(), e);
                 throw new IllegalStateException(e1);
@@ -44,14 +49,18 @@ public abstract class AbstractTask implements Task {
     }
 
     void commit() throws JMSException {
-        queueSession.commit();
+        session.commit();
     }
 
     void rollback() throws JMSException {
-        queueSession.rollback();
+        session.rollback();
     }
 
-    abstract void processNextInputItem() throws JMSException;
+    public long getProcessCount() {
+        return processCount.get();
+    }
+
+    abstract void processNextInputItem() throws JMSException, InterruptedException;
 
 
 }

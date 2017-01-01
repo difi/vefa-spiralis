@@ -14,19 +14,19 @@ public class ProducerAdapterImpl<T extends Serializable> implements ProducerAdap
     private final Session session;
     private final Queue queue;
     private final MessageProducer producer;
-    private String queueName = "unknown";
+    private Place place = null;
 
-    public ProducerAdapterImpl(final Session session, final String queueName) {
+    public ProducerAdapterImpl(final Session session, final Place place) {
 
         this.session = session;
-        this.queueName = queueName;
+        this.place = place;
 
 
         try {
-            queue = session.createQueue(queueName);
+            queue = session.createQueue(place.getQueueName());
             producer = session.createProducer(queue);
         } catch (JMSException e) {
-            throw new IllegalStateException("Unable to create producer for queue " + queueName + ": " + e.getMessage(), e);
+            throw new IllegalStateException("Unable to create producer for queue " + place + ": " + e.getMessage(), e);
         }
     }
 
@@ -39,5 +39,10 @@ public class ProducerAdapterImpl<T extends Serializable> implements ProducerAdap
         } catch (JMSException e) {
             throw new IllegalStateException("Unable to send message: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public Session getSession() {
+        return session;
     }
 }

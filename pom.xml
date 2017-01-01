@@ -8,6 +8,7 @@
     <modules>
         <module>spiralis-validator</module>
         <module>spiralis-core</module>
+        <module>oxalis-plugin</module>
     </modules>
     <packaging>pom</packaging>
 

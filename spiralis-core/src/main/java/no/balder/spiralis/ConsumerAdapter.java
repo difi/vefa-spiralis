@@ -1,5 +1,8 @@
 package no.balder.spiralis;
 
+import javax.jms.Session;
+import java.io.Serializable;
+
 /**
  * Adapter for JMS {@link javax.jms.MessageConsumer} instances
  *
@@ -11,7 +14,9 @@ package no.balder.spiralis;
  *         Date: 07.12.2016
  *         Time: 14.17
  */
-public interface ConsumerAdapter <T> {
+public interface ConsumerAdapter <T extends Serializable> {
 
-    T receive();
+    T receive() throws InterruptedException;
+
+    Session getSession();
 }

@@ -25,7 +25,7 @@ public class OutboundWorkflowTest {
 
     @BeforeTest
     public void setUp() {
-        objectMother.postSampleInvoiceToOutboundReceptionQueue(10);
+        objectMother.postIdenticalSampleInvoicesToOutboundReceptionQueue(10);
     }
 
 

@@ -2,9 +2,8 @@ package no.balder.spiralis;
 
 import com.google.inject.Inject;
 
-import javax.jms.JMSException;
-import javax.jms.MessageProducer;
-import javax.jms.QueueConnection;
+import javax.jms.*;
+import java.lang.IllegalStateException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -22,8 +21,8 @@ public class OutboundWorkflow {
 
     public static final int VALIDATOR_COUNT = 3;
     public static final int TRANSMITTER_COUNT = 20;
-    private final QueueConnection queueConnection;
-    private final JmsHelper jmsHelper;
+    private final Connection jmsConnection;
+    private final AdapterFactory adapterFactory;
     ExecutorService validatorExecutor;
     ExecutorService transmissionExecutor;
 
@@ -31,9 +30,9 @@ public class OutboundWorkflow {
     private List<Future<?>> validationTasks;
 
     @Inject
-    public OutboundWorkflow(QueueConnection queueConnection, JmsHelper jmsHelper) {
-        this.queueConnection = queueConnection;
-        this.jmsHelper = jmsHelper;
+    public OutboundWorkflow(Connection connection, AdapterFactory adapterFactory) {
+        this.jmsConnection = connection;
+        this.adapterFactory = adapterFactory;
     }
 
     public void start() {
@@ -43,7 +42,8 @@ public class OutboundWorkflow {
         validationTasks = createAndStartValidationTasks();
 
         try {
-            queueConnection.start();
+            jmsConnection.start();
+
         } catch (JMSException e) {
             throw new IllegalStateException("Unable to start JMS queue connection " + e, e);
         }
@@ -61,8 +61,10 @@ public class OutboundWorkflow {
         List<Future<?>> futures = new ArrayList<>();
 
         for (int i = 0; i < VALIDATOR_COUNT; i++) {
-            JmsConsumer transactionalConsumerFor = jmsHelper.createTransactionalConsumerFor(QueueConstant.OUTBOUND_RECEPTION);
-            MessageProducer producer = jmsHelper.createProducer(transactionalConsumerFor.getQueueSession(), QueueConstant.OUTBOUND_TRANSMISSION);
+/*
+            JmsConsumer transactionalConsumerFor = jmsHelper.createTransactionalConsumerFor(Place.OUTBOUND_RECEPTION);
+            MessageProducer producer = jmsHelper.createProducer(transactionalConsumerFor.getQueueSession(), Place.OUTBOUND_TRANSMISSION);
+*/
 
 
 /*
@@ -73,6 +75,11 @@ public class OutboundWorkflow {
         }
 
         return futures;
+    }
+
+    void createSbdhInspectionTask() throws JMSException {
+        {
+        }
     }
 
     public AtomicInteger getMessageCounter() {

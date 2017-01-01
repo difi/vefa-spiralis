@@ -10,8 +10,8 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.testng.IModuleFactory;
 import org.testng.ITestContext;
 
-import javax.jms.Connection;
-import javax.jms.JMSException;
+import javax.jms.*;
+import java.lang.IllegalStateException;
 
 /**
  * @author steinar
@@ -26,28 +26,48 @@ public class TestModuleFactory implements IModuleFactory {
 
     class InMemoryDatabaseModule extends AbstractModule {
 
+
+        private ActiveMQConnectionFactory factory;
+
         @Override
         protected void configure() {
+            factory = new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false");
+            factory.setTrustAllPackages(true);
+
             binder().install(new RepositoryModule());
             binder().install(new TestInMemoryDatabaseModule());
+
+            bind(AdapterFactory.class);
         }
 
 
-        @Singleton
         @Provides
-        protected ActiveMQConnectionFactory provideActiveMQConnectionFactory() {
-            ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false");
-            factory.setTrustAllPackages(true);
-
+        @Singleton
+        protected ConnectionFactory provideActiveMQConnectionFactory() {
             return factory;
         }
 
         @Provides
-        protected Connection provideJmsConnection(ActiveMQConnectionFactory connectionFactory) {
+        @javax.inject.Singleton
+        protected Connection provideJmsConnection(ConnectionFactory connectionFactory) {
             try {
                 return connectionFactory.createConnection();
             } catch (JMSException e) {
                 throw new IllegalStateException("Unable to create connection " + e.getMessage(), e);
+            }
+        }
+
+        /** Provides a Transactional JMS session
+         *
+         * @param connection
+         * @return
+         */
+        @Provides
+        protected Session provideTxJmsSession(Connection connection) {
+            try {
+                return connection.createSession(true, -1);
+            } catch (JMSException e) {
+                throw new IllegalStateException("Unable to create JMS session " + e.getMessage(), e);
             }
         }
     }

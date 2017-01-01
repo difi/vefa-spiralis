@@ -2,17 +2,15 @@ package no.balder.spiralis;
 
 import com.google.inject.Inject;
 import eu.peppol.outbound.OxalisOutboundComponent;
-import eu.peppol.outbound.transmission.Transmitter;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Guice;
 import org.testng.annotations.Test;
+import static no.balder.spiralis.Place.*;
+import javax.jms.*;
 
-import javax.jms.JMSException;
-import javax.jms.QueueConnection;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.testng.Assert.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * @author steinar
@@ -26,27 +24,32 @@ public class TransmissionTaskTest {
     ObjectMother objectMother;
 
     @javax.inject.Inject
-    QueueConnection queueConnection;
+    Connection queueConnection;
 
     @Inject
-    JmsHelper jmsHelper;
+    ConnectionFactory queueConnectionFactory;
 
     @BeforeTest
     public void setUp() {
-        objectMother.postSampleInvoiceToOutboundTransmissionQueue(10);
+        objectMother.postIdenticalSampleInvoicesToOutboundTransmissionQueue(10);
     }
 
     @Test
-    public void testTransmission() throws JMSException {
+    public void testTransmission() throws JMSException, InterruptedException {
 
-        JmsConsumer consumerFor = jmsHelper.createTransactionalConsumerFor(QueueConstant.OUTBOUND_TRANSMISSION);
-        AtomicInteger messageCounter = new AtomicInteger();
 
-        TransmissionTask transmissionTask = new TransmissionTask(new OxalisOutboundComponent(), consumerFor, messageCounter);
+        Session session = queueConnection.createSession(true, -1);
+
+        ConsumerAdapterImpl<OutboundTransmissionRequest> consumer = new ConsumerAdapterImpl<>(session, OUTBOUND_TRANSMISSION);
+        TransmissionTask transmissionTask = new TransmissionTask(new OxalisOutboundComponent(), session, consumer);
         queueConnection.start();
 
         // Processes a single message.
-        transmissionTask.processMessage();
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Future<?> submit = executorService.submit(transmissionTask);
+
+        Thread.sleep(100*1000);
+
 
     }
 }

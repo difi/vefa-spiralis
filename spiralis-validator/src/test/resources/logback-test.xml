@@ -9,7 +9,7 @@
     <logger name="ch.qos.logback" level="info" />
     <logger name="no.difi" level="warn" />
 
-    <root level="debug">
+    <root level="info">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>

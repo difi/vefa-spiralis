@@ -1,6 +1,7 @@
 package no.balder.spiralis;
 
 import com.google.inject.Inject;
+import eu.peppol.document.SbdhWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeTest;
@@ -40,9 +41,9 @@ public class SbdhInspectionTaskTest {
 
         queueSession = queueConnection.createSession(true, -1);
 
-        consumerAdapter = new ConsumerAdapterImpl<OutboundTransmissionRequest>(queueSession, "UNIT.TEST");
-        producerAdapter = new ProducerAdapterImpl<OutboundTransmissionRequest>(queueSession, "UNIT.TEST.WRITE");
-        errorProducerAdapter = new ProducerAdapterImpl<String>(queueSession, "UNIT.TEST.ERROR");
+        consumerAdapter = new ConsumerAdapterImpl<OutboundTransmissionRequest>(queueSession, new Place("UNIT.TEST"));
+        producerAdapter = new ProducerAdapterImpl<OutboundTransmissionRequest>(queueSession, new Place("UNIT.TEST.WRITE"));
+        errorProducerAdapter = new ProducerAdapterImpl<String>(queueSession, new Place ("UNIT.TEST.ERROR"));
 
 
         // Submits a sample outbound transmission request into the system.
@@ -63,7 +64,7 @@ public class SbdhInspectionTaskTest {
     public void testProcessNextInputItem() throws Exception {
 
         queueConnection.start();
-        SbdhInspectionTask sbdhInspectionTask = new SbdhInspectionTask(queueSession, consumerAdapter, producerAdapter, errorProducerAdapter);
+        SbdhInspectionTask sbdhInspectionTask = new SbdhInspectionTask(queueSession, consumerAdapter, producerAdapter, errorProducerAdapter, new SbdhWrapper());
         ExecutorService executorService = Executors.newFixedThreadPool(2);
 
         Future<?> sbdhFutureTask = executorService.submit(sbdhInspectionTask);
