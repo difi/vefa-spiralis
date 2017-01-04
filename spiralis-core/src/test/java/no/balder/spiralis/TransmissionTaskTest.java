@@ -41,7 +41,8 @@ public class TransmissionTaskTest {
         Session session = queueConnection.createSession(true, -1);
 
         ConsumerAdapterImpl<OutboundTransmissionRequest> consumer = new ConsumerAdapterImpl<>(session, OUTBOUND_TRANSMISSION);
-        TransmissionTask transmissionTask = new TransmissionTask(new OxalisOutboundComponent(), session, consumer);
+        ProducerAdapter<OutboundTransmissionRequest> producer = new ProducerAdapterImpl<>(session, OUTBOUND_TRANSMISSION_ERROR);
+        TransmissionTask transmissionTask = new TransmissionTask(new OxalisOutboundComponent(), session, consumer, producer);
         queueConnection.start();
 
         // Processes a single message.

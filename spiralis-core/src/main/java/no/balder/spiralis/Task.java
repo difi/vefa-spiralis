@@ -8,7 +8,7 @@ package no.balder.spiralis;
  *         Time: 18.54
  * @parameter <T> the type of input to the task.
  */
-public interface Task<T> extends Runnable {
+public interface Task extends Runnable {
 
     long getProcessCount();
 

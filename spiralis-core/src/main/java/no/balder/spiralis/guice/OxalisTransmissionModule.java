@@ -11,7 +11,7 @@ import eu.peppol.outbound.transmission.Transmitter;
  *         Date: 05.12.2016
  *         Time: 17.01
  */
-public class TransmissionModule extends AbstractModule {
+public class OxalisTransmissionModule extends AbstractModule {
     @Override
     protected void configure() {
 

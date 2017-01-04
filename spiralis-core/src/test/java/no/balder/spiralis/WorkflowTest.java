@@ -28,7 +28,7 @@ import static org.testng.FileAssert.fail;
 public class WorkflowTest {
 
     public static final Logger log = LoggerFactory.getLogger(WorkflowTest.class);
-    public static final int numberOfSamples = 400;
+    public static final int numberOfSamples = 10;
 
     @Inject
     ObjectMother objectMother;
@@ -49,11 +49,11 @@ public class WorkflowTest {
     @Test()
     public void testLoadSamples() throws Exception {
 
-        List<OutboundTransmissionRequest> outboundTransmissionRequests = objectMother.postSampleInvoices(numberOfSamples, Place.OUTBOUND_WORKFLOW);
+        List<OutboundTransmissionRequest> outboundTransmissionRequests = objectMother.postSampleInvoices(numberOfSamples, Place.OUTBOUND_WORKFLOW_START);
 
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         connection.start();
-        MessageConsumer consumer = session.createConsumer(session.createQueue(Place.OUTBOUND_WORKFLOW.getQueueName()));
+        MessageConsumer consumer = session.createConsumer(session.createQueue(Place.OUTBOUND_WORKFLOW_START.getQueueName()));
 
         int count = 0;
         for (int i = 0; i < numberOfSamples; i++) {
@@ -72,23 +72,28 @@ public class WorkflowTest {
     public void testLoadSamplesAndAddSbdh() throws Exception {
 
         // Loads sample invoices into the Outbound.reception queue
-        List<OutboundTransmissionRequest> outboundTransmissionRequests = objectMother.postSampleInvoices(numberOfSamples, Place.OUTBOUND_WORKFLOW);
+        List<OutboundTransmissionRequest> outboundTransmissionRequests = objectMother.postSampleInvoices(numberOfSamples, Place.OUTBOUND_WORKFLOW_START);
         assertEquals(outboundTransmissionRequests.size(), numberOfSamples);
 
         // Inspects the payload for Sbdh and posts the results into the Outbound.Validation queue
-        SbdhInspectionTask sbdhInspectionTask = taskFactory.createSbdhInspectionTasks(1).get(0);
+        SbdhInspectionTask sbdhInspectionTask = taskFactory.createSbdhInspectionTasks(1, Place.OUTBOUND_WORKFLOW_START,
+                Place.OUTBOUND_VALIDATION,Place.OUTBOUND_INSPECTION_ERROR).get(0);
         ExecutorService sbhdInspectionExecutor = Executors.newFixedThreadPool(1);
         Future<?> future = sbhdInspectionExecutor.submit(sbdhInspectionTask);
 
         // Validates and places results into the Outbound.transmission queue
-        List<ValidationTask> validatorTasks = taskFactory.createValidatorTasks(1);
+        List<ValidationTask> validatorTasks = taskFactory.createValidatorTasks(1,
+                Place.OUTBOUND_VALIDATION, Place.OUTBOUND_TRANSMISSION, Place.OUTBOUND_INSPECTION_ERROR);
         ExecutorService validationExecutor = Executors.newFixedThreadPool(validatorTasks.size());
         for (ValidationTask validatorTask : validatorTasks) {
             Future<?> validationFuture = validationExecutor.submit(validatorTask);
         }
 
         // Performs the actual transmission.
-        List<TransmissionTask> transmissionTasks = taskFactory.createTransmissionTasks(10, new URL("http://localhost:8080/oxalis/as2"));
+        List<TransmissionTask> transmissionTasks = taskFactory.createTransmissionTasks(10,
+                new URL("http://localhost:8080/oxalis/as2"),
+                Place.OUTBOUND_TRANSMISSION, Place.OUTBOUND_TRANSMISSION_ERROR);
+
         ExecutorService transmissionExecutor = Executors.newFixedThreadPool(transmissionTasks.size());
         for (TransmissionTask transmissionTask : transmissionTasks) {
             transmissionExecutor.submit(transmissionTask);
@@ -96,15 +101,15 @@ public class WorkflowTest {
 
         connection.start();
         long processed = 0;
-        int count=0;
+        int attempts =0;
         do {
 
             Thread.sleep(1000);
-            log.debug("Waiting for Tasks to complete, " + count + " attempts so far...");
+            log.debug("Waiting for Tasks to complete, " + attempts + " attempts so far...");
             processed = transmissionTasks.stream().collect(Collectors.summingLong(Task::getProcessCount));
-            count++;
+            attempts++;
 
-        } while (processed < numberOfSamples && count < (numberOfSamples / 15));
+        } while (processed < numberOfSamples && attempts < (10));
 
         // Wait for clean up
         Thread.sleep(1000);

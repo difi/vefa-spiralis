@@ -39,9 +39,5 @@ public class ValidationTask extends AbstractTask {
         log.info("Skipping the validation for " + request.getMessageId());
 
         producerAdapter.send(request);
-
-        long counter = processCount.incrementAndGet();
-
-        log.debug("Processed " + counter + " requests so far" + request);
     }
 }

@@ -1,0 +1,29 @@
+<configuration>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <Pattern>%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</Pattern>
+        </encoder>
+    </appender>
+
+    <appender name="oxalis-logfile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>/tmp/logs/oxalis-out.log</File>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>/tmp/logs/oxalis-out.%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="ch.qos.logback" level="info" />
+    <logger name="no.difi" level="warn" />
+    <logger name="eu.peppol.document" level="warn" />
+    <logger name="org.apache.activemq" level="info" />
+    <logger name="org.apache.http" level="warn" />
+    <logger name="eu.peppol" level="info" />
+
+    <root level="debug">
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>

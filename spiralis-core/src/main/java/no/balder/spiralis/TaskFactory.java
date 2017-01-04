@@ -29,15 +29,19 @@ public class TaskFactory {
         this.oxalisOutboundComponent = oxalisOutboundComponent;
     }
 
-    List<SbdhInspectionTask> createSbdhInspectionTasks(int qty) throws JMSException {
+    Connection getJmsConnection() {
+        return jmsConnection;
+    }
+
+    public List<SbdhInspectionTask> createSbdhInspectionTasks(int qty, Place inputPlace, Place outputPlace, Place errorPlace) throws JMSException {
 
         List<SbdhInspectionTask> result = new ArrayList<>();
         for (int i = 0; i < qty; i++) {
             Session session = jmsConnection.createSession(true, -1);
             SbdhInspectionTask sbdhInspectionTask = new SbdhInspectionTask(session,
-                    AdapterFactory.createConsumerAdapter(session, Place.OUTBOUND_WORKFLOW),
-                    AdapterFactory.createProducerAdapter(session, Place.OUTBOUND_VALIDATION),
-                    AdapterFactory.createProducerAdapter(session, Place.OUTBOUND_INSPECTION_ERROR),
+                    AdapterFactory.createConsumerAdapter(session, inputPlace),
+                    AdapterFactory.createProducerAdapter(session, outputPlace),
+                    AdapterFactory.createProducerAdapter(session, errorPlace),
                     new SbdhWrapper()
             );
             result.add(sbdhInspectionTask);
@@ -45,31 +49,39 @@ public class TaskFactory {
         return result;
     }
 
-    List<TransmissionTask> createTransmissionTasks(int qty) throws JMSException {
-        return createTransmissionTasks(qty, null);
+    public List<TransmissionTask> createTransmissionTasks(int qty, Place inputPlace, Place errorPlace) {
+        return createTransmissionTasks(qty, null, inputPlace, errorPlace);
     }
 
-    List<TransmissionTask> createTransmissionTasks(int qty, URL overrideEndPointUrl) throws JMSException {
+    public List<TransmissionTask> createTransmissionTasks(int qty, URL overrideEndPointUrl, Place inputPlace, Place errorPlace) {
 
-        List<TransmissionTask> tasks = new ArrayList<>();
-        for (int i = 0; i < qty; i++) {
-            Session session = jmsConnection.createSession(true, -1);
-            TransmissionTask transmissionTask = new TransmissionTask(oxalisOutboundComponent, session, AdapterFactory.createConsumerAdapter(session, Place.OUTBOUND_TRANSMISSION), overrideEndPointUrl);
-            tasks.add(transmissionTask);
+        try {
+            List<TransmissionTask> tasks = new ArrayList<>();
+            for (int i = 0; i < qty; i++) {
+                Session session = jmsConnection.createSession(true, -1);
+                TransmissionTask transmissionTask = new TransmissionTask(oxalisOutboundComponent,
+                        session,
+                        AdapterFactory.createConsumerAdapter(session, inputPlace),
+                        AdapterFactory.createProducerAdapter(session, errorPlace),
+                        overrideEndPointUrl);
+                tasks.add(transmissionTask);
+            }
+
+            return tasks;
+        } catch (JMSException e) {
+            throw new IllegalStateException("Unable to create transmission task, reason: " + e.getMessage(), e);
         }
-
-        return tasks;
     }
 
-    public List<ValidationTask> createValidatorTasks(int qty) throws JMSException {
+    public List<ValidationTask> createValidatorTasks(int qty, Place inputPlace, Place outputPlace, Place errorPlace) throws JMSException {
 
         List<ValidationTask> validationTasks = new ArrayList<>();
         for (int i = 0; i < qty; i++) {
             Session session = jmsConnection.createSession(true, -1);
             ValidationTask validationTask = new ValidationTask(session,
-                    AdapterFactory.createConsumerAdapter(session, Place.OUTBOUND_VALIDATION),
-                    AdapterFactory.createProducerAdapter(session, Place.OUTBOUND_TRANSMISSION),
-                    AdapterFactory.createProducerAdapter(session, Place.OUTBOUND_VALIDATION_ERROR));
+                    AdapterFactory.createConsumerAdapter(session, inputPlace),
+                    AdapterFactory.createProducerAdapter(session, outputPlace),
+                    AdapterFactory.createProducerAdapter(session, errorPlace));
             validationTasks.add(validationTask);
         }
         return validationTasks;

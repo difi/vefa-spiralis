@@ -130,7 +130,7 @@ public class ObjectMother {
 
         try {
             Session queueSession = jmsConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            ProducerAdapter<OutboundTransmissionRequest> producerAdapter = AdapterFactory.createProducerAdapter(queueSession, Place.OUTBOUND_WORKFLOW);
+            ProducerAdapter<OutboundTransmissionRequest> producerAdapter = AdapterFactory.createProducerAdapter(queueSession, Place.OUTBOUND_WORKFLOW_START);
 
             try {
                 for (int i = 0; i < count; i++) {

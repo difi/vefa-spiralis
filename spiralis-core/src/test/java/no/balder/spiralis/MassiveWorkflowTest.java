@@ -79,7 +79,7 @@ public class MassiveWorkflowTest {
 
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-        ProducerAdapter<OutboundTransmissionRequest> oa = new ProducerAdapterImpl<>(session, Place.OUTBOUND_WORKFLOW);
+        ProducerAdapter<OutboundTransmissionRequest> oa = new ProducerAdapterImpl<>(session, Place.OUTBOUND_WORKFLOW_START);
 
         int max = 1000;
         Map<Path, PeppolStandardBusinessHeader> headerMap = scanAndParse(max);
@@ -145,7 +145,7 @@ public class MassiveWorkflowTest {
         executorService = Executors.newFixedThreadPool(3);
         for (int i=0; i < 3; i++) {
             Session session = connection.createSession(true, -1);
-            SbdhInspectionTask sbdhInspectionTask = new SbdhInspectionTask(session, new ConsumerAdapterImpl<OutboundTransmissionRequest>(session, Place.OUTBOUND_WORKFLOW),
+            SbdhInspectionTask sbdhInspectionTask = new SbdhInspectionTask(session, new ConsumerAdapterImpl<OutboundTransmissionRequest>(session, Place.OUTBOUND_WORKFLOW_START),
                     new ProducerAdapterImpl<OutboundTransmissionRequest>(session, Place.OUTBOUND_TRANSMISSION),
                     new ProducerAdapterImpl<String>(session, new Place("ERROR")), new SbdhWrapper());
 

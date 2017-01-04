@@ -17,10 +17,15 @@ public abstract class AbstractTask implements Task {
 
     public static final Logger log = LoggerFactory.getLogger(AbstractTask.class);
     private final Session session;
-    protected final AtomicLong processCount = new AtomicLong(0);
+    private final AtomicLong processCount = new AtomicLong(0);
 
 
     public AbstractTask(Session session) {
+
+        if (session == null) {
+            throw new IllegalArgumentException("Session is a required argument");
+        }
+
         this.session = session;
     }
 
@@ -31,6 +36,10 @@ public abstract class AbstractTask implements Task {
             while (!Thread.currentThread().isInterrupted()) {
                 processNextInputItem();
                 session.commit();
+
+                log.debug("Process count is " + processCount.get());
+                long l = processCount.incrementAndGet();
+                log.debug("Incremented processCount to " + l);
             }
         } catch (InterruptedException e) {
             log.info("Shutting down task due to interruption...");
@@ -57,7 +66,10 @@ public abstract class AbstractTask implements Task {
     }
 
     public long getProcessCount() {
-        return processCount.get();
+
+        long l = processCount.get();
+        log.debug("Returning process count of " + l);
+        return l;
     }
 
     abstract void processNextInputItem() throws JMSException, InterruptedException;

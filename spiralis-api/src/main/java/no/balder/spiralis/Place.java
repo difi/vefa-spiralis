@@ -9,7 +9,7 @@ package no.balder.spiralis;
 public class Place {
 
     /** Name of queue from which new transmission requests are obtained */
-    public static final Place OUTBOUND_WORKFLOW = new Place("Outbound.workflow");
+    public static final Place OUTBOUND_WORKFLOW_START = new Place("Outbound.workflow");
 
     /** Name of queue holding requests for validation */
     public static final Place OUTBOUND_VALIDATION = new Place("Outbound.validation");
@@ -22,6 +22,8 @@ public class Place {
     /** Name of queue holding transmission requests ready to be transmitted into the PEPPOL network */
     public static final Place OUTBOUND_TRANSMISSION = new Place("Outbound.transmission");
 
+    public static final Place OUTBOUND_TRANSMISSION_ERROR = new Place("Outbound.transmission.error");
+
     public static final Place OUTBOUND_VALIDATION_ERROR = new Place("Outbound.validation.error");
 
     private final String queueName;
@@ -33,4 +35,5 @@ public class Place {
     public String getQueueName() {
         return queueName;
     }
+
 }

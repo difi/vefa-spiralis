@@ -2,16 +2,12 @@ package no.balder.spiralis;
 
 import com.google.inject.Inject;
 
-import javax.jms.*;
-import java.lang.IllegalStateException;
-import java.util.ArrayList;
+import javax.jms.Connection;
+import javax.jms.JMSException;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ *
  * @author steinar
  *         Date: 05.12.2016
  *         Time: 14.41
@@ -19,27 +15,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class OutboundWorkflow {
 
 
-    public static final int VALIDATOR_COUNT = 3;
-    public static final int TRANSMITTER_COUNT = 20;
     private final Connection jmsConnection;
-    private final AdapterFactory adapterFactory;
-    ExecutorService validatorExecutor;
-    ExecutorService transmissionExecutor;
 
-    AtomicInteger messageCounter = new AtomicInteger(0);
-    private List<Future<?>> validationTasks;
+    private Transaction transmissionTransaction;
+
+    private boolean started = false;
 
     @Inject
-    public OutboundWorkflow(Connection connection, AdapterFactory adapterFactory) {
+    public OutboundWorkflow(Connection connection) {
         this.jmsConnection = connection;
-        this.adapterFactory = adapterFactory;
     }
 
+
     public void start() {
-
-        transmissionExecutor = Executors.newFixedThreadPool(TRANSMITTER_COUNT);
-
-        validationTasks = createAndStartValidationTasks();
+        if (started) {
+            throw new IllegalStateException("OutboundWorkflow must not be started twice");
+        }
+        transmissionTransaction.start();
 
         try {
             jmsConnection.start();
@@ -47,54 +39,29 @@ public class OutboundWorkflow {
         } catch (JMSException e) {
             throw new IllegalStateException("Unable to start JMS queue connection " + e, e);
         }
+        started = true;
     }
 
-
-    /**
-     * Creates and submits a set of validation tasks.
-     *
-     * @return
-     */
-    List<Future<?>> createAndStartValidationTasks() {
-        validatorExecutor = Executors.newFixedThreadPool(VALIDATOR_COUNT);
-
-        List<Future<?>> futures = new ArrayList<>();
-
-        for (int i = 0; i < VALIDATOR_COUNT; i++) {
-/*
-            JmsConsumer transactionalConsumerFor = jmsHelper.createTransactionalConsumerFor(Place.OUTBOUND_RECEPTION);
-            MessageProducer producer = jmsHelper.createProducer(transactionalConsumerFor.getQueueSession(), Place.OUTBOUND_TRANSMISSION);
-*/
-
-
-/*
-            ValidatorTask validatorTask = new ValidatorTask(validator, transactionalConsumerFor, producer, messageCounter);
-            Future<?> submitted = validatorExecutor.submit(validatorTask);
-            futures.add(submitted);
-*/
-        }
-
-        return futures;
-    }
-
-    void createSbdhInspectionTask() throws JMSException {
-        {
-        }
-    }
-
-    public AtomicInteger getMessageCounter() {
-        return messageCounter;
-    }
 
     public void stop() {
-        // Prevents new tasks from
-        validatorExecutor.shutdown();
-        transmissionExecutor.shutdown();
 
-        for (Future<?> validationTask : validationTasks) {
-            validationTask.cancel(true);
-        }
+        transmissionTransaction.getExecutorService().shutdown();
 
-        validatorExecutor.shutdownNow();
+        // TODO: Consider cancelling each task in each transaction
+
+        transmissionTransaction.getExecutorService().shutdownNow();
+        started = false;
+    }
+
+
+    public Transaction addTransmissionTransaction(List<TransmissionTask> tasks) {
+
+        transmissionTransaction = new Transaction(tasks);
+
+        return transmissionTransaction;
+    }
+
+    public Transaction getTransmissionTransaction() {
+        return transmissionTransaction;
     }
 }

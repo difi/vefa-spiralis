@@ -30,22 +30,27 @@ import java.util.concurrent.atomic.AtomicLong;
  *         Date: 05.12.2016
  *         Time: 16.55
  */
-public class TransmissionTask extends AbstractTask {
+public class TransmissionTask extends AbstractTask implements Task {
 
     public static final Logger log = LoggerFactory.getLogger(TransmissionTask.class);
 
     private final OxalisOutboundComponent oxalisOutboundComponent;
     private final ConsumerAdapter<OutboundTransmissionRequest> consumer;
+    private final ProducerAdapter<OutboundTransmissionRequest> errorProducer;
+
     private final Optional<URL> overrideEndPointUrl;
 
-    public TransmissionTask(OxalisOutboundComponent oxalisOutboundComponent, Session session, ConsumerAdapter<OutboundTransmissionRequest> consumer) {
-        this(oxalisOutboundComponent, session, consumer, null);
+    public TransmissionTask(OxalisOutboundComponent oxalisOutboundComponent, Session session, ConsumerAdapter<OutboundTransmissionRequest> consumer,
+                            ProducerAdapter<OutboundTransmissionRequest> errorProducer) {
+        this(oxalisOutboundComponent, session, consumer, errorProducer, null);
     }
 
-    public TransmissionTask(OxalisOutboundComponent oxalisOutboundComponent, Session session, ConsumerAdapter<OutboundTransmissionRequest> consumer, URL overrideEndPointUrl) {
+    public TransmissionTask(OxalisOutboundComponent oxalisOutboundComponent, Session session, ConsumerAdapter<OutboundTransmissionRequest> consumer,
+                            ProducerAdapter<OutboundTransmissionRequest> errorProducer, URL overrideEndPointUrl) {
         super(session);
         this.oxalisOutboundComponent = oxalisOutboundComponent;
         this.consumer = consumer;
+        this.errorProducer = errorProducer;
         this.overrideEndPointUrl = Optional.ofNullable(overrideEndPointUrl);
 
     }
@@ -83,14 +88,15 @@ public class TransmissionTask extends AbstractTask {
 
 
         Transmitter simpleTransmitter = oxalisOutboundComponent.getSimpleTransmitter();
+        log.debug("Transmitting message using " + simpleTransmitter.getClass().getName());
         try {
             TransmissionResponse transmissionResponse = simpleTransmitter.transmit(transmissionRequest);
-            long processed = processCount.incrementAndGet();
-            // Now handle the responses
+            // TODO: handle the responses
+
 
         } catch (OxalisTransmissionException e) {
-            throw new IllegalStateException("Unable to transmit " + transmissionRequest);
+            // TODO: handle errors by writing them to the error queue (place)
+            throw new IllegalStateException("Unable to transmit, e: " + e.getMessage() + transmissionRequest);
         }
-
     }
 }
