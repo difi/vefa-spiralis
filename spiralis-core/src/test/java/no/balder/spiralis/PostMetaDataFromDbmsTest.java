@@ -29,6 +29,8 @@ public class PostMetaDataFromDbmsTest {
     MessageRepository messageRepository;
     private Long msgNo;
 
+    @com.google.inject.Inject Connection connection;
+
     @BeforeTest
     public void setUp() throws URISyntaxException, OxalisMessagePersistenceException {
 
@@ -50,8 +52,6 @@ public class PostMetaDataFromDbmsTest {
         MessageMetaData messageMetaData = messageRepository.findByMessageNo(msgNo);
         assertNotNull(messageMetaData);
 
-        ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory();
-        Connection connection = activeMQConnectionFactory.createConnection();
         connection.start();
 
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);

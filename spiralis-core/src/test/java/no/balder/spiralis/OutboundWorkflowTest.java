@@ -110,7 +110,10 @@ public class OutboundWorkflowTest {
 
             Thread.sleep(1000);
             log.debug("Waiting for Tasks to complete, " + attempts + " attempts so far...");
+            assertEquals(outboundWorkflow.getTransmissionTransaction(), transmissionTx);
+
             processed = transmissionTx.getProcessCount();
+
             attempts++;
 
         } while (processed < numberOfSamples && attempts < (100));
@@ -131,16 +134,7 @@ public class OutboundWorkflowTest {
 
         outboundWorkflow.start();
 
-        long processed = 0;
-        int attempts =0;
-        do {
-
-            Thread.sleep(1000);
-            log.debug("Waiting for Tasks to complete, " + attempts + " attempts so far...");
-            processed = outboundWorkflow.getTransmissionTransaction().getProcessCount();
-            attempts++;
-
-        } while (processed < numberOfSamples && attempts < (100));
+        long processed = outboundWorkflow.waitForProcessingToComplete(numberOfSamples, 100, 1000L);
 
         assertEquals(processed, numberOfSamples);
 

@@ -1,6 +1,8 @@
 package no.balder.spiralis;
 
 import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -14,6 +16,7 @@ import java.util.List;
  */
 public class OutboundWorkflow {
 
+    public static final Logger log = LoggerFactory.getLogger(OutboundWorkflow.class);
 
     private final Connection jmsConnection;
 
@@ -63,5 +66,30 @@ public class OutboundWorkflow {
 
     public Transaction getTransmissionTransaction() {
         return transmissionTransaction;
+    }
+
+    /**
+     *
+     * @param processCountToWaitFor
+     * @return
+     */
+    public long waitForProcessingToComplete(long processCountToWaitFor, int repetitions, long durationBetweenRepetitions) {
+
+        long processed = 0;
+        int attempts =0;
+        do {
+
+            try {
+                Thread.sleep(durationBetweenRepetitions);
+            } catch (InterruptedException e) {
+                return processed;
+            }
+            log.debug("Waiting for Tasks to complete, " + attempts + " attempts so far...");
+            processed = getTransmissionTransaction().getProcessCount();
+            attempts++;
+
+        } while (processed < processCountToWaitFor && attempts < (repetitions));
+
+        return getTransmissionTransaction().getProcessCount();
     }
 }

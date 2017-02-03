@@ -21,20 +21,12 @@ public class AdapterTest {
     private Session session;
     private MessageConsumer consumer;
     private Session readSession;
-    private Connection connection;
 
     @Inject
-    ActiveMQConnectionFactory activeMQConnectionFactory;
+    Connection connection;
 
     @BeforeClass
     public void setUp() throws JMSException {
-
-/*
-        ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false");
-        activeMQConnectionFactory.setTrustAllPackages(true);
-*/
-
-        connection = activeMQConnectionFactory.createConnection();
 
         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         Queue queue = session.createQueue("UNIT.TEST");

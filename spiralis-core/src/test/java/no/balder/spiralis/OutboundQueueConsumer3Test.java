@@ -70,11 +70,6 @@ public class OutboundQueueConsumer3Test implements ExceptionListener {
                 ProcessorTask processorTask = new ProcessorTask(queueSession, receivedMessages);
                 Future<?> future = executorService.submit(processorTask);
                 futures.add(future);
-/*
-                Thread thread = new Thread(processorTask, "SpiralisWorker-" + i);
-                threads.add(thread);
-                thread.start();
-*/
             }
 
             // Do not use transactional mode for producing messages.

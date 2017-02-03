@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import eu.peppol.PeppolStandardBusinessHeader;
 import eu.peppol.document.SbdhWrapper;
 import eu.peppol.identifier.MessageId;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Guice;
@@ -70,7 +69,8 @@ public class MassiveWorkflowTest {
 
 
     /** Scans a directory for xml files, parses and extracts a PEPPOL SBDH after which an {@link OutboundTransmissionRequest}
-     * is created and posted to a transmission queue.
+     * is created and posted to a queue. The second part of the test creates a workflow and retrieves the messages
+     * from the queue.
      *
      * @throws Exception
      */
@@ -161,7 +161,6 @@ public class MassiveWorkflowTest {
         return objectMother.scanAndParse(max);
     }
 
-    @NotNull
     private List<Path> getPathsToTestFiles() throws IOException {
         return objectMother.getPathsToTestFiles(Integer.MAX_VALUE);
     }

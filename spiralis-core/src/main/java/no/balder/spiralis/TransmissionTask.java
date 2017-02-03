@@ -5,23 +5,25 @@ import eu.peppol.identifier.PeppolDocumentTypeId;
 import eu.peppol.identifier.PeppolProcessTypeId;
 import eu.peppol.lang.OxalisTransmissionException;
 import eu.peppol.outbound.OxalisOutboundComponent;
-import eu.peppol.outbound.transmission.TransmissionRequest;
 import eu.peppol.outbound.transmission.TransmissionRequestBuilder;
-import eu.peppol.outbound.transmission.TransmissionResponse;
-import eu.peppol.outbound.transmission.Transmitter;
+import no.difi.oxalis.api.outbound.TransmissionRequest;
+import no.difi.oxalis.api.outbound.TransmissionResponse;
+import no.difi.oxalis.api.outbound.Transmitter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.jms.*;
-import javax.jms.IllegalStateException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.IllegalStateException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -81,22 +83,37 @@ public class TransmissionTask extends AbstractTask implements Task {
                 .payLoad(inputStream);
 
         if (overrideEndPointUrl.isPresent()) {
-            builder.overrideAs2Endpoint(overrideEndPointUrl.get(), "AP_OVERRIDE");
+            try {
+                builder.overrideAs2Endpoint(overrideEndPointUrl.get().toURI(), "AP_OVERRIDE");
+            } catch (URISyntaxException e) {
+                throw new IllegalStateException("Unable to convert URL to URI" + e.getMessage(),e);
+            }
         }
 
-        TransmissionRequest transmissionRequest = builder.build();
+        TransmissionRequest transmissionRequest = null;
+        try {
+            transmissionRequest = builder.build();
+        } catch (OxalisTransmissionException e) {
+            throw new IllegalStateException("Unable to build request " + e.getMessage(), e);
+        }
 
 
-        Transmitter simpleTransmitter = oxalisOutboundComponent.getSimpleTransmitter();
+        Transmitter simpleTransmitter = oxalisOutboundComponent.getTransmitter();
         log.debug("Transmitting message using " + simpleTransmitter.getClass().getName());
         try {
+            long start = System.nanoTime();
             TransmissionResponse transmissionResponse = simpleTransmitter.transmit(transmissionRequest);
+            long end = System.nanoTime();
+            long elapsed = TimeUnit.MILLISECONDS.convert(end - start, TimeUnit.NANOSECONDS);
+
+            log.info("Elapsed time for round-trip of " + request.getMessageId() + " took " + elapsed + "ms");
             // TODO: handle the responses
 
 
-        } catch (OxalisTransmissionException e) {
+        } catch (Exception e) {
+
             // TODO: handle errors by writing them to the error queue (place)
-            throw new IllegalStateException("Unable to transmit, e: " + e.getMessage() + transmissionRequest);
+            throw new IllegalStateException("Unable to transmit, error: " + e.getMessage() + transmissionRequest);
         }
     }
 }

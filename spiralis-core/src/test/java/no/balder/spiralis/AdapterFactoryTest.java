@@ -30,6 +30,11 @@ public class AdapterFactoryTest {
     @Inject
     AdapterFactory producerFactory;
 
+    /**
+     * The JMS Connection should always be the same.
+     *
+     * @throws Exception when something goes wrong.
+     */
     @Test
     public void testVerifyConnectionSingleton() throws Exception {
         assertEquals(connection, connection2);

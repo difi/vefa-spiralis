@@ -4,7 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import eu.peppol.outbound.OxalisOutboundComponent;
-import eu.peppol.outbound.transmission.Transmitter;
+import no.difi.oxalis.api.outbound.Transmitter;
 
 /**
  * @author steinar
@@ -12,6 +12,13 @@ import eu.peppol.outbound.transmission.Transmitter;
  *         Time: 17.01
  */
 public class OxalisTransmissionModule extends AbstractModule {
+
+    private final OxalisOutboundComponent oxalisOutboundComponent;
+
+    public OxalisTransmissionModule() {
+        oxalisOutboundComponent = new OxalisOutboundComponent();
+    }
+
     @Override
     protected void configure() {
 
@@ -20,8 +27,8 @@ public class OxalisTransmissionModule extends AbstractModule {
 
     @Provides
     Transmitter provideTransmitter(OxalisOutboundComponent oxalisOutboundComponent) {
-        Transmitter evidencePersistingTransmitter = oxalisOutboundComponent.getEvidencePersistingTransmitter();
-        return evidencePersistingTransmitter;
+        Transmitter transmitter = oxalisOutboundComponent.getTransmitter();
+        return transmitter;
     }
 
 

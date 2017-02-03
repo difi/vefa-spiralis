@@ -3,7 +3,6 @@ package no.balder.spiralis;
 import eu.peppol.PeppolStandardBusinessHeader;
 import eu.peppol.document.NoSbdhParser;
 import eu.peppol.identifier.MessageId;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +82,6 @@ public class ObjectMother {
         return peppolStandardBusinessHeader;
     }
 
-    @NotNull
     public static OutboundTransmissionRequest sampleOutboundTransmissionRequest() {
         PeppolStandardBusinessHeader peppolStandardBusinessHeader = ObjectMother.parseSample();
 
@@ -202,7 +200,6 @@ public class ObjectMother {
      * @return
      * @throws IOException
      */
-    @NotNull
     public List<Path> getPathsToTestFiles(int max) throws IOException {
         List<Path> dirListing = new ArrayList<>();
 

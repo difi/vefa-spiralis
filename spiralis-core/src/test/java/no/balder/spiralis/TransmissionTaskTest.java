@@ -45,11 +45,11 @@ public class TransmissionTaskTest {
         TransmissionTask transmissionTask = new TransmissionTask(new OxalisOutboundComponent(), session, consumer, producer);
         queueConnection.start();
 
-        // Processes a single message.
+        // Processes the messages
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Future<?> submit = executorService.submit(transmissionTask);
 
-        Thread.sleep(100*1000);
+
 
 
     }

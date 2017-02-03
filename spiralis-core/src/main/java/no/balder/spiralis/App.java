@@ -30,7 +30,7 @@ public class App {
     public static OptionSpec<Integer> maxNumberOfMessagesOption;
     public static OptionSpec<Integer> paralellTransmissionTasks;
 
-    public static String effectiveBrokerUrl = "tcp://localhost:61616";
+    public static String effectiveBrokerUrl = "tcp://localhost:61616?jms.prefetchPolicy.queuePrefetch=1";
 
     public static void main(String[] args) {
 
@@ -53,6 +53,7 @@ public class App {
 
         log.info("Connecting to JMS queue at " + effectiveBrokerUrl);
 
+
         Injector injector = Guice.createInjector(
                 new RepositoryModule(),
                 new OxalisDataSourceModule(),
@@ -72,7 +73,7 @@ public class App {
         }
 
 
-        log.info("Using " + paralellTransmissionTasks + " paralell transmission tasks");
+        log.info("Using " + optionSet.valueOf(paralellTransmissionTasks) + " paralell transmission tasks");
 
         OutboundWorkflow outboundWorkflow = outboundWorkflowBuilder
                 .trasmissionTaskCount(optionSet.valueOf(paralellTransmissionTasks)) // Number of paralell tasks
