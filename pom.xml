@@ -11,6 +11,7 @@
         <module>spiralis-core</module>
         <module>oxalis-plugin</module>
         <module>azureblob</module>
+        <module>spiralis-inbound</module>
     </modules>
     <packaging>pom</packaging>
 
