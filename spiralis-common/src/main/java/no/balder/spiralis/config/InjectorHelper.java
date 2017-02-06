@@ -16,7 +16,9 @@ public class InjectorHelper {
 
     public static Injector getInstance(Config config) {
 
-        return Guice.createInjector(new InboundConfigurationModule(config));
+        return Guice.createInjector(
+                new SpiralisConfigurationModule(config)
+        );
 
     }
 }

@@ -17,20 +17,19 @@ import static no.balder.spiralis.config.SpiralisConfigProperty.SPIRALIS_HOME;
  *         Date: 03.02.2017
  *         Time: 13.10
  */
-class InboundConfigurationModule extends AbstractModule {
+class SpiralisConfigurationModule extends AbstractModule {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(InboundConfigurationModule.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(SpiralisConfigurationModule.class);
 
     private final Config commandLineConfig;
 
 
-    public InboundConfigurationModule(Config commandLineConfig) {
+    public SpiralisConfigurationModule(Config commandLineConfig) {
         this.commandLineConfig = commandLineConfig;
     }
 
     @Override
     protected void configure() {
-
 
     }
 
@@ -71,7 +70,8 @@ class InboundConfigurationModule extends AbstractModule {
                 .withFallback(externalConfig)                               // The external configuration file
                 .withFallback(defaultReferenceConfig)                       // The reference.conf files on class path
                 .withFallback((defaultReferenceConfig.getConfig("default")));   // Finally, set default fall back values
-        
-        return effectiveMergedconfig;
+
+        final Config resolved = effectiveMergedconfig.resolve();
+        return resolved;
     }
 }

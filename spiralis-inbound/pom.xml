@@ -43,6 +43,35 @@
             <groupId>net.sf.jopt-simple</groupId>
             <artifactId>jopt-simple</artifactId>
         </dependency>
+        <dependency>
+            <groupId>no.difi.vefa</groupId>
+            <artifactId>peppol-sbdh</artifactId>
+        </dependency>
+
+        <!-- Spiralis modules -->
+        <dependency>
+            <groupId>no.balder.spiralis</groupId>
+            <artifactId>azure-blob</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.balder.spiralis</groupId>
+            <artifactId>spiralis-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.balder.spiralis</groupId>
+            <artifactId>spiralis-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>no.balder.spiralis</groupId>
+            <artifactId>spiralis-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
 
     </dependencies>
 </project>

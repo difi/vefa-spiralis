@@ -18,4 +18,12 @@ class SpiralisTask {
     public Path getPath() {
         return path;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SpiralisTask{");
+        sb.append("path=").append(path);
+        sb.append('}');
+        return sb.toString();
+    }
 }

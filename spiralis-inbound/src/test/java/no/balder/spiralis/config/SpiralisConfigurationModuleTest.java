@@ -7,7 +7,6 @@ import com.google.inject.Key;
 import com.google.inject.name.Names;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import no.balder.spiralis.config.InboundConfigurationModule;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -24,7 +23,7 @@ import static org.testng.Assert.assertTrue;
  *         Date: 03.02.2017
  *         Time: 13.39
  */
-public class InboundConfigurationModuleTest {
+public class SpiralisConfigurationModuleTest {
 
 
     @Inject
@@ -37,8 +36,8 @@ public class InboundConfigurationModuleTest {
         
         Config dummy = ConfigFactory.load("dummy");
 
-        InboundConfigurationModule inboundConfigurationModule = new InboundConfigurationModule(dummy);
-        Injector injector = Guice.createInjector(inboundConfigurationModule);
+        SpiralisConfigurationModule spiralisConfigurationModule = new SpiralisConfigurationModule(dummy);
+        Injector injector = Guice.createInjector(spiralisConfigurationModule);
         injector.injectMembers(this);
 
         assertNotNull(this.injector);

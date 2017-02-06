@@ -22,8 +22,6 @@ class FileFinder extends SimpleFileVisitor<Path> {
     public static final Logger LOGGER = LoggerFactory.getLogger(FileFinder.class);
 
 
-    public static final String GLOB_XML = "glob:*.{XML,xml}";
-
     private final Path root;
     private final String pattern;
     private final BlockingQueue<Path> queue;
@@ -44,7 +42,7 @@ class FileFinder extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 
-        if (pathMatcher.matches(file.getFileName())) {
+        if (pathMatcher.matches(file)) {
             if (!queue.contains(file)) {
                 try {
                     queue.put(file);

@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.StandardWatchEventKinds.*;
@@ -55,23 +56,29 @@ public class WatchDir {
     private final Map<WatchKey, Path> keys;
     private final boolean recursive;
     private final BlockingQueue<Path> foundQueue;
+    private final AtomicLong processCount;
     private boolean trace = false;
 
     public static final Logger LOGGER = LoggerFactory.getLogger(WatchDir.class);
 
+    private final PathMatcher pathMatcher;
+
     /**
      * Creates a WatchService and registers the given directory
      */
-    WatchDir(Path dir, boolean recursive, BlockingQueue<Path> foundQueue) throws IOException {
+    WatchDir(Path dir, boolean recursive, String fileMatchGlob, BlockingQueue<Path> foundQueue, AtomicLong processCount) throws IOException {
         this.foundQueue = foundQueue;
+        this.processCount = processCount;
         this.watcher = FileSystems.getDefault().newWatchService();
         this.keys = new HashMap<WatchKey, Path>();
         this.recursive = recursive;
 
+        pathMatcher = dir.getFileSystem().getPathMatcher(fileMatchGlob);
+
         if (recursive) {
-            System.out.format("Scanning %s ...\n", dir);
+            LOGGER.debug("Scanning {} ...", dir);
             registerAll(dir);
-            System.out.println("Done.");
+            LOGGER.debug("Done.");
         } else {
             register(dir);
         }
@@ -109,7 +116,8 @@ public class WatchDir {
         // Scan all directories
 
         final LinkedBlockingQueue<Path> foundQueue = new LinkedBlockingQueue<>();
-        new WatchDir(dir, recursive, foundQueue).processEvents();
+        final AtomicLong atomicLong = new AtomicLong(0);
+        new WatchDir(dir, recursive, "glob:*",foundQueue, atomicLong).processEvents();
     }
 
     /**
@@ -120,10 +128,10 @@ public class WatchDir {
         if (trace) {
             Path prev = keys.get(key);
             if (prev == null) {
-                System.out.format("register: %s\n", dir);
+                LOGGER.debug("Registering {}", dir);
             } else {
                 if (!dir.equals(prev)) {
-                    System.out.format("update: %s -> %s\n", prev, dir);
+                    LOGGER.debug("Updating {} -> {}", prev, dir);
                 }
             }
         }
@@ -150,7 +158,7 @@ public class WatchDir {
      * Process all events for keys queued to the watcher
      */
     void processEvents() {
-        System.out.println("Waiting for changes in registered directories.....");
+        LOGGER.debug("Waiting for changes in registered directories.....");
         for (; ; ) {
 
             // wait for key to be signalled
@@ -163,7 +171,7 @@ public class WatchDir {
 
             Path dir = keys.get(key);
             if (dir == null) {
-                System.err.println("WatchKey not recognized!!");
+                LOGGER.debug("WatchKey not recognized!!");
                 continue;
             }
 
@@ -181,7 +189,7 @@ public class WatchDir {
                 Path child = dir.resolve(name);     // Computes full path
 
                 // prints event
-                System.out.format("%s: %s\n", event.kind().name(), child);
+                LOGGER.debug("{}: {}", event.kind().name(), child);
 
                 // if a new directory is created, to be watched recursively, then
                 // register it and its sub-directories
@@ -197,16 +205,20 @@ public class WatchDir {
 
                 if (kind == ENTRY_CREATE && Files.isRegularFile(child)) {
                     try {
-                        if (!foundQueue.contains(child)) {
+                        LOGGER.debug("Inspecting " + child );
+                        if (pathMatcher.matches(child) && !foundQueue.contains(child)) {
                             foundQueue.put(child);
                             LOGGER.debug("Added " + child + " to processing queue");
+
+                            // bumps the counter
+                            processCount.incrementAndGet();
                         }
                     } catch (InterruptedException e) {
                         throw new IllegalStateException("While processing " + child + "; " + e.getMessage(), e);
                     }
                 }
                 if (kind == ENTRY_DELETE && Files.isRegularFile(child)) {
-                    if (foundQueue.contains(child)) {
+                    if (pathMatcher.matches(child) && foundQueue.contains(child)) {
                         foundQueue.remove(child);
                         LOGGER.debug("Removed " + child + " from queue");
                     }

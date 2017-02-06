@@ -1,17 +1,13 @@
 package no.balder.spiralis.inbound;
 
+import no.balder.spiralis.payload.WellKnownFileTypeSuffix;
+import no.balder.spiralis.testutil.DummyFiles;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import static java.nio.file.FileVisitResult.CONTINUE;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
@@ -22,38 +18,31 @@ import static org.testng.Assert.assertTrue;
  */
 public class FileFinderTest {
 
+    /**
+     * Creates
+     * <pre>
+     *  root/inbound/dummy.xml
+     *  root/inbound/dummy-doc.xml
+     *  root/inbound/dummy-rcpt.xml
+     *  root/inbound/dummy-rcpt.smime
+     * </pre>
+     * @throws Exception
+     */
     @Test
     public void testFindFiles() throws Exception {
 
-
-        Path root = Files.createTempDirectory("test");
-        Path inbound = root.resolve("inbound");
-        Files.createDirectories(inbound);
-
-        Path dummyFile = inbound.resolve("dummy.xml");
-
-        Files.write(dummyFile, "<xml>dummy</xml>".getBytes());
+        Path root = DummyFiles.createInboundDummyFiles();
 
         BlockingQueue<Path> queue = new LinkedBlockingDeque<>();
 
-        FileFinder fileFinder = new FileFinder(root, FileFinder.GLOB_XML, queue);
+        // Locates the files matching the supplied glob and places them into the supplied queue
+        // Should match -doc.xml, -rem.xml and -rcpt.smime
+        FileFinder fileFinder = new FileFinder(root, WellKnownFileTypeSuffix.globOfAllTypesInSubdirs(), queue);
         fileFinder.findFiles();
 
-        assertEquals(1,queue.size());
+        assertEquals(queue.size(),3);
 
-        Files.walkFileTree(root, new SimpleFileVisitor<Path>(){
-
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                Files.delete(file);
-                return CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                Files.delete(dir);
-                return CONTINUE;
-            }
-        });
+        // Clean up
+        DummyFiles.removeAll(root);
     }
 }

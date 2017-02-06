@@ -17,10 +17,11 @@ public class SpiralisHomeDirectoryTest {
     @Test
     public void testLocateSpiralisHomeDir() throws Exception {
 
-        System.setProperty(SpiralisConfigProperty.SPIRALIS_HOME, "/tmp");
+        final String value = System.getProperty("java.io.tmpdir");
+        System.setProperty(SpiralisConfigProperty.SPIRALIS_HOME, value);
 
         Path path = SpiralisHomeDirectory.locateSpiralisHomeDir();
-        assertEquals(path, Paths.get("/tmp"));
+        assertEquals(path, Paths.get(value));
 
     }
 

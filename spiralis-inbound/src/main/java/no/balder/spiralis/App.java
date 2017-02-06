@@ -28,7 +28,7 @@ public class App {
             return;
         }
 
-        // Parse the command line and creates Config object
+        // Parse the command line and transfers the options into a new Config object
         Config config = parseCommandLine(commandLineParser, args);
 
         // Creates injector using Config object
