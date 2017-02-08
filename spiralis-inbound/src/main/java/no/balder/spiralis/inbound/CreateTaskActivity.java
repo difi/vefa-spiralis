@@ -35,7 +35,7 @@ class CreateTaskActivity {
 
     /**
      * Creates {@link ExecutorService} with N_THREADS, which will execute N_THREADS ({@link Callable}) instances.
-     * The {@link Callable} instances will read from a queue, create tasks (work order requests) and place them on
+     * The {@link Callable} instances will read from a queue, createInboundBlobName tasks (work order requests) and place them on
      * the other queue.
      * @param scannedTasksQueue
      * @param createdTasksQueue
@@ -46,7 +46,7 @@ class CreateTaskActivity {
 
         // Every thread in the ExecutorService gets to execute a Callable worker.
         for (int i = 0; i < N_THREADS; i++) {
-            final Future<Integer> processingFuture = processingExecutorService.submit(createProcessTask(scannedTasksQueue, createdTasksQueue));
+            final Future<Long> processingFuture = processingExecutorService.submit(createProcessTask(scannedTasksQueue, createdTasksQueue));
         }
     }
 
@@ -62,21 +62,35 @@ class CreateTaskActivity {
      * @param createdTasksQueue queue into which created tasks should be put
      * @return
      */
-    private Callable<Integer> createProcessTask(BlockingQueue<Path> scannedTasksQueue, BlockingQueue<SpiralisTask> createdTasksQueue) {
-        return new Callable<Integer>() {
+    private Callable<Long> createProcessTask(BlockingQueue<Path> scannedTasksQueue, BlockingQueue<SpiralisTask> createdTasksQueue) {
+        return new Callable<Long>() {
             @Override
-            public Integer call() throws Exception {
+            public Long call() throws Exception {
                 for (; ; ) {
                     final Path path = scannedTasksQueue.take();
                     LOGGER.debug("Processing " + path);
-                    createdTasksQueue.put(new SpiralisTask(path));
-                    processCount.incrementAndGet();
+
+                    // Inspects the payload type based upon the filename suffix
+                    try {
+
+                        final SpiralisTask spiralisTask = SpiralisTaskFactory.insepctInbound(path);
+                        createdTasksQueue.put(spiralisTask);
+                        processCount.incrementAndGet();
+                        LOGGER.debug(path + " placed on queue");
+                    } catch (InterruptedException e) {
+                        LOGGER.warn("Interrupted, returning with " + processCount.get() + " paths processed");
+                        return processCount.get();
+                    } catch (Exception e) {
+                        LOGGER.warn("Unable to process " + path + ", reason:" + e.getMessage(), e);
+                        LOGGER.info("Continuing processing");
+                        continue;
+                    }
                 }
             }
         };
     }
 
-    public Long getProcessCount() {
+    public Long getProcessedCounter() {
         return processCount.get();
     }
 }

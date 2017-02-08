@@ -15,7 +15,9 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.InvalidKeyException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -93,6 +95,27 @@ public class AzureMethodsTest {
         container.deleteIfExists();
         container = blobClient.getContainerReference("outbox");
         container.deleteIfExists();
+    }
+
+    @Test(enabled = false)
+    public void deletePeppolApContainers() throws Exception {
+        // Retrieve storage account from connection-string.
+        CloudStorageAccount storageAccount = CloudStorageAccount.parse(storageConnectionString);
+
+        // Create the payload client.
+        CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
+        final Iterable<CloudBlobContainer> cloudBlobContainers = blobClient.listContainers("peppol-ap");
+        cloudBlobContainers.forEach(cloudBlobContainer -> {
+            final String name = cloudBlobContainer.getName();
+            try {
+                cloudBlobContainer.deleteIfExists();
+            } catch (StorageException e) {
+
+
+            }
+            System.out.println(name + " deleted");
+        });
+
 
     }
 
@@ -113,7 +136,7 @@ public class AzureMethodsTest {
 
 
     @Test
-    public void listBlobsInPeppolContainers() throws Exception {
+    public void listBlobCountInPeppolContainers() throws Exception {
 
         // Retrieve storage account from connection-string.
         CloudStorageAccount storageAccount = CloudStorageAccount.parse(storageConnectionString);
@@ -132,7 +155,26 @@ public class AzureMethodsTest {
             } else
                 System.out.println("Skipping " + cloudBlobContainer.getName());
         }
+    }
 
+    @Test
+    public void listPeppolApBlobsInAllContainers() throws URISyntaxException, InvalidKeyException {
+        // Retrieve storage account from connection-string.
+        CloudStorageAccount storageAccount = CloudStorageAccount.parse(storageConnectionString);
+
+        // Create the payload client.
+        CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
+
+        final Iterable<CloudBlobContainer> cloudBlobContainers = blobClient.listContainers();
+        for (CloudBlobContainer cloudBlobContainer : cloudBlobContainers) {
+            if (cloudBlobContainer.getName().startsWith("peppol")) {
+
+                final Iterable<ListBlobItem> listBlobItems = cloudBlobContainer.listBlobs("",true);
+                for (ListBlobItem listBlobItem : listBlobItems) {
+                    System.out.println(listBlobItem.getUri());
+                }
+            }
+        }
     }
 
     @Test

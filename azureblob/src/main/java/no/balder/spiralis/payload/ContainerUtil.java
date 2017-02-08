@@ -3,6 +3,8 @@ package no.balder.spiralis.payload;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author steinar
@@ -17,6 +19,14 @@ class ContainerUtil {
      * the filename part of the path, digesting with SHA-1, creating a long from the first 7 bytes
      * which is finally modulus calculated.
      *
+     * <p>
+     *     The base file name used as input is the file name only, less any extension, i.e.
+     *     <pre>
+     *         /var/peppol/IN/9908_971589671/9908_848382922/2017-01-10/17524837-551a-4316-b3a3-feb9ebd84ac0-doc.xml
+     *     </pre>
+     *     would yield {@code 17524837-551a-4316-b3a3-feb9ebd84ac0} as the input to the digestion algorithm.
+     * </p>
+     *
      * @param path
      * @return
      */
@@ -25,7 +35,7 @@ class ContainerUtil {
         MessageDigest sha1 = null;
         try {
             sha1 = MessageDigest.getInstance("SHA-1");  // Not thread safe
-            String filenameOnly = getFileNameOnly(path);
+            String filenameOnly = getFileNameOnly(path); // Rip of extension and any prefixes
 
 
             final byte[] digest = sha1.digest(filenameOnly.getBytes());
@@ -43,7 +53,16 @@ class ContainerUtil {
     static String getFileNameOnly(Path path) {
         // Extracts the filename part
         final Path fileName = path.getFileName();
-        return fileName.toString();
+
+        // Strips of the extension
+        final Pattern pattern = Pattern.compile("(.*)-(rcpt.smime|doc.xml|rem.xml)$");
+        final Matcher matcher = pattern.matcher(fileName.toString());
+        if (matcher.find()) {
+            final String baseFileName = matcher.group(1);
+            return baseFileName;
+        } else
+            throw new IllegalArgumentException("Unable to determine basic filename of " + path);
+
     }
 
     public static byte[] longToBytes(long l) {

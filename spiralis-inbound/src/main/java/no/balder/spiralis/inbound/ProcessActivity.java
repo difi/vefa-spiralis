@@ -1,21 +1,14 @@
 package no.balder.spiralis.inbound;
 
 import com.google.inject.Inject;
+import no.balder.spiralis.jdbc.SpiralisTaskPersister;
 import no.balder.spiralis.payload.PayloadStore;
-import no.difi.vefa.peppol.common.model.Header;
-import no.difi.vefa.peppol.sbdh.SbdReader;
-import no.difi.vefa.peppol.sbdh.util.XMLStreamUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.stream.XMLStreamReader;
-import java.io.OutputStream;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.Date;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,17 +24,19 @@ class ProcessActivity {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(ProcessActivity.class);
 
-    public static final int N_THREADS = 4;
+    public static final int N_THREADS = 8;
     private final LinkedBlockingQueue<SpiralisTask> createdTasksQueue;
     private final PayloadStore payloadStore;
+    private final SpiralisTaskPersister spiralisTaskPersister;
     int threadNumber = 0;
     private ExecutorService executorService;
     private AtomicLong processCount = new AtomicLong(0);
 
     @Inject
-    public ProcessActivity(LinkedBlockingQueue<SpiralisTask> createdTasksQueue, PayloadStore payloadStore) {
+    public ProcessActivity(LinkedBlockingQueue<SpiralisTask> createdTasksQueue, PayloadStore payloadStore, SpiralisTaskPersister spiralisTaskPersister) {
         this.createdTasksQueue = createdTasksQueue;
         this.payloadStore = payloadStore;
+        this.spiralisTaskPersister = spiralisTaskPersister;
     }
 
     public void invoke() {
@@ -60,49 +55,64 @@ class ProcessActivity {
     private Callable<Void> createSpiralisTaskProcessor(LinkedBlockingQueue<SpiralisTask> createdTasksQueue) {
         return new Callable<Void>() {
             @Override
-            public Void call() throws Exception {
+            public Void call() {
+
+                int errorCount = 0;
                 for (; ; ) {
-                    final SpiralisTask spiralisTask = createdTasksQueue.take();
-                    final Path path = spiralisTask.getPath();
+                    // All errors needs to be catched in order to continue is something goes wrong
+                    try {
+                        SpiralisTask spiralisTask = null;
+                        try {
+                            spiralisTask = createdTasksQueue.take();
+                            processCount.incrementAndGet();
+                        } catch (InterruptedException e) {
+                            LOGGER.error("Error taking from queue: " + e.getMessage(), e);
+                            continue;
+                        }
+                        final Path path = spiralisTask.getPayloadPath();
 
-                    LOGGER.debug("Processing " + spiralisTask);
-                    final String fileName = path.getFileName().toString();
-                    Header header;
-                    if (fileName.endsWith("-doc.xml") || fileName.endsWith("-doc.XML")) {
+                        LOGGER.debug("Processing " + spiralisTask);
 
-                        try (final SbdReader sbdReader = SbdReader.newInstance(Files.newInputStream(path))) {
+                        String blobName = BlobName.createInboundBlobName(spiralisTask, spiralisTask::getPayloadPath);
+                        LOGGER.debug("Uploading " + path + " to " + blobName);
+                        final URI payloadBlobUri = payloadStore.upload(path, blobName);
+                        LOGGER.debug("Uploaded " + payloadBlobUri);
 
-                            // Grabs the header
-                            header = sbdReader.getHeader();
-
-                            // Obtains a reader, which will read the embedded xml document
-                            final XMLStreamReader xmlStreamReader = sbdReader.xmlReader();
-
-                            final Path tempFile = Files.createTempFile("upload-", ".xml");
-
-                            // Extracts the
-                            try (OutputStream outputStream = Files.newOutputStream(tempFile)) {
-                                XMLStreamUtils.copy(xmlStreamReader, outputStream);
-                            }
+                        // Handles the transmission receipt, if present
+                        URI smimeBlobUri = null;
+                        if (spiralisTask.getSmimePath() != null) {
+                            String smimeBlobName = BlobName.createInboundBlobName(spiralisTask, spiralisTask::getSmimePath);
+                            LOGGER.debug("Uploading " + spiralisTask.getSmimePath() + " to " + smimeBlobName);
+                            smimeBlobUri = payloadStore.upload(spiralisTask.getSmimePath(), smimeBlobName);
+                            LOGGER.debug("Uploaded " + smimeBlobUri);
+                        } else {
+                            LOGGER.warn("No transmission receipt found for " + spiralisTask);
                         }
 
-                        final Date creationTimestamp = header.getCreationTimestamp();
-                        final OffsetDateTime offsetDateTime = OffsetDateTime.ofInstant(creationTimestamp.toInstant(), ZoneId.systemDefault());
+                        // Inserts the metadata into the database
+                        final Long aLong = spiralisTaskPersister.saveInboundTask(spiralisTask, payloadBlobUri, Optional.ofNullable(smimeBlobUri));
 
-                        final URI upload = payloadStore.upload(path, header.getSender().toString(), header.getReceiver().toString(), offsetDateTime);
-                        processCount.incrementAndGet();
-                        LOGGER.debug("Uploaded " + upload);
-                    }
-                    if (fileName.endsWith(".smime")) {
-                        payloadStore.upload(path, null, null, OffsetDateTime.now());
-                    }
+                        // Mark payload as processed
+                        
 
+                    } catch (Exception e) {
+                        LOGGER.error("Error during processing " + e.getMessage(), e);
+                        errorCount++;
+                        if (errorCount > 100) {
+                            LOGGER.error("More than 100 errors, bailing out");
+                            break;
+                        } else
+                            continue;
+                    }
                 }
+
+                return null;
             }
         };
     }
 
-    public Long getProcessCount() {
+
+    public Long getProcessedCounter() {
         return processCount.get();
     }
 }

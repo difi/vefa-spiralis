@@ -43,11 +43,11 @@ public class AzurePayloadStore implements PayloadStore {
     }
 
     @Override
-    public URI upload(Path payload, String sender, String receiver, OffsetDateTime offsetDateTime) {
+    public URI upload(Path payload, String blobName) {
 
         final CloudBlobContainer cloudBlobContainer = containerReferenceFor(payload);
         try {
-            final CloudBlockBlob blockBlobReference = cloudBlobContainer.getBlockBlobReference(payload.toString());
+            final CloudBlockBlob blockBlobReference = cloudBlobContainer.getBlockBlobReference(blobName);
             blockBlobReference.uploadFromFile(payload.toString());
             return blockBlobReference.getUri();
         } catch (URISyntaxException |StorageException | IOException e) {

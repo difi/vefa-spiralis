@@ -3,6 +3,7 @@ package no.balder.spiralis.config;
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.typesafe.config.ConfigFactory;
+import no.balder.spiralis.jdbc.DataSourceModule;
 import org.testng.IModuleFactory;
 import org.testng.ITestContext;
 
@@ -22,6 +23,7 @@ public class SpiralisInboundTestModuleFactory implements IModuleFactory {
         @Override
         protected void configure() {
             binder().install(new SpiralisConfigurationModule(ConfigFactory.empty()));
+            binder().install(new DataSourceModule());
         }
     }
 }

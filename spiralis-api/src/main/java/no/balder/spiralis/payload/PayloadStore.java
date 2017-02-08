@@ -10,5 +10,5 @@ import java.time.OffsetDateTime;
  *         Time: 16.01
  */
 public interface PayloadStore {
-    URI upload(Path payload, String sender, String receiver, OffsetDateTime offsetDateTime);
+    URI upload(Path payload, String name);
 }

@@ -38,7 +38,7 @@ public class App {
         InboundDirector inboundDirector = injector.getInstance(InboundDirector.class);
 
         try {
-            inboundDirector.start();
+            inboundDirector.startThreads();
         } catch (InterruptedException e) {
             LOGGER.debug("Processing interrupted");
         }

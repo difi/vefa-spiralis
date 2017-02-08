@@ -53,7 +53,7 @@ public class AzurePayloadStoreTest {
         final AzurePayloadStore azurePayloadStore = new AzurePayloadStore(config.getString(SPIRALIS_AZURE_CONNECT));
 
 
-        final URI upload = azurePayloadStore.upload(path, "sender", "receiver", OffsetDateTime.now());
+        final URI upload = azurePayloadStore.upload(path, "sampleblob");
         System.out.println(upload);
 
     }

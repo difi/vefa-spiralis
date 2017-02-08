@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static no.balder.spiralis.config.SpiralisConfigProperty.SPIRALIS_HOME;
@@ -17,7 +18,7 @@ import static no.balder.spiralis.config.SpiralisConfigProperty.SPIRALIS_HOME;
  *         Date: 03.02.2017
  *         Time: 13.10
  */
-class SpiralisConfigurationModule extends AbstractModule {
+public class SpiralisConfigurationModule extends AbstractModule {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(SpiralisConfigurationModule.class);
 
@@ -42,7 +43,7 @@ class SpiralisConfigurationModule extends AbstractModule {
     }
 
     /**
-     * Loads the external configuration file
+     * Loads the external configuration file, i.e. the {@code $SPIRALIS_HOME/spiralis.conf}
      *
      * @param spiralisHome full path to the external config file
      * @return a typesafe config object
@@ -53,7 +54,10 @@ class SpiralisConfigurationModule extends AbstractModule {
     protected Config loadExternalConfigFile(@Named(SPIRALIS_HOME) Path spiralisHome) {
 
         Path configPath = spiralisHome.resolve("spiralis.conf");
-        LOGGER.info("Loading configuration from " + configPath);
+        LOGGER.info("External configuration file: " + configPath);
+        if (!Files.exists(spiralisHome)) {
+            LOGGER.warn(configPath + " does not exist");
+        }
         Config config = ConfigFactory.parseFile(configPath.toFile());
         return config;
     }
@@ -71,7 +75,7 @@ class SpiralisConfigurationModule extends AbstractModule {
                 .withFallback(defaultReferenceConfig)                       // The reference.conf files on class path
                 .withFallback((defaultReferenceConfig.getConfig("default")));   // Finally, set default fall back values
 
-        final Config resolved = effectiveMergedconfig.resolve();
+        final Config resolved = effectiveMergedconfig.resolve();    // Resolves and substitutes any variables
         return resolved;
     }
 }
