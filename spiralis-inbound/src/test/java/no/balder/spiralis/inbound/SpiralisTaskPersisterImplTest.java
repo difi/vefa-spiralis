@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import no.balder.spiralis.config.SpiralisInboundTestModuleFactory;
 import no.balder.spiralis.jdbc.SpiralisTaskPersister;
 import no.balder.spiralis.testutil.DummyFiles;
+import no.difi.vefa.peppol.common.model.ParticipantIdentifier;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Guice;
@@ -46,6 +47,7 @@ public class SpiralisTaskPersisterImplTest {
 
         // Creates the SpiralisTask based upon the contents in the sample dummy files
         final SpiralisTask spiralisTask = SpiralisTaskFactory.insepctInbound(paths.get(0));
+
 
         spiralisTaskPersister.saveInboundTask(spiralisTask, new URI("azure", "microsoft", "/inbound/test", null),
                 Optional.ofNullable(new URI("azure", "microsoft", "/inbound/test/x.smime", null)));
