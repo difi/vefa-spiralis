@@ -17,6 +17,7 @@ public class SpiralisTask {
     private String transmissionId;  // the transmission-ID retrieved from the receipt
     private TemporalAccessor received;
     private String ourMessageId;
+    private String sendersApId = "UNKNOWN";
 
 
     public SpiralisTask(Path payloadPath, Header header) {
@@ -76,5 +77,13 @@ public class SpiralisTask {
 
     public String getOurMessageId() {
         return ourMessageId;
+    }
+
+    public void setSendersApId(String sendersApId) {
+        this.sendersApId = sendersApId;
+    }
+
+    public String getSendersApId() {
+        return sendersApId;
     }
 }

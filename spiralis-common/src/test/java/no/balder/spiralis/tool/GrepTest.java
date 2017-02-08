@@ -20,6 +20,10 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.regex.Pattern.CASE_INSENSITIVE;
+import static java.util.regex.Pattern.MULTILINE;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -32,9 +36,9 @@ public class GrepTest {
     @Test
     public void testGrep() throws Exception {
 
-        final URL resource = GrepTest.class.getClassLoader().getResource("sample-smime-file.txt");
-        final Pattern pattern = Pattern.compile("^message-id\\h*:\\h*(.*)$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+        final Pattern pattern = Pattern.compile("^message-id\\h*:\\h*(.*)$", CASE_INSENSITIVE | MULTILINE);
 
+        final URL resource = sampleFileUrl();
 
         Path path = Paths.get(resource.toURI());
         long start = System.nanoTime();
@@ -50,32 +54,24 @@ public class GrepTest {
         System.out.println(elapsed + "ms");
     }
 
-    List<String> performGrep(File f, Pattern pattern, int group) throws IOException {
-
-
-        // Open the file and then get a channel from the stream
-        try (FileInputStream fis = new FileInputStream(f); FileChannel fc = fis.getChannel()) {
-
-            List<String> result = new ArrayList<>();
-            // Get the file's size and then map it into memory
-            int sz = (int) fc.size();
-            MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, sz);
-
-            Charset charset = Charset.forName("UTF-8");
-            CharsetDecoder decoder = charset.newDecoder();
-
-            // Decode the file into a char buffer
-            CharBuffer cb = decoder.decode(bb);
-
-            // Perform the search
-            final Matcher matcher = pattern.matcher(cb);
-
-            while (matcher.find()) {
-                result.add(matcher.group(1));
-            }
-            return result;
-        }
+    private URL sampleFileUrl() {
+        return GrepTest.class.getClassLoader().getResource("sample-smime-file.txt");
     }
 
+    @Test
+    public void findOriginalMessageID() throws Exception {
 
+        final Grep grep = new Grep(new File(sampleFileUrl().toURI()));
+
+        final Pattern pattern = Pattern.compile("Original-Message-ID\\h*:\\h*(.*)$", CASE_INSENSITIVE | MULTILINE);
+        String msgId = grep.grepFirstGroup(pattern);
+
+        assertNotNull(msgId);
+        assertEquals(msgId, "17524837-551a-4316-b3a3-feb9ebd84ac0");
+
+        
+        String rcptId = grep.grepFirstGroup(Pattern.compile("Original-Recipient\\h*:\\h*rfc822\\h*;\\h*(.*)$", CASE_INSENSITIVE | MULTILINE));
+        assertNotNull(rcptId);
+        assertEquals(rcptId, "APP_1000000146");
+    }
 }

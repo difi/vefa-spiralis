@@ -62,7 +62,7 @@ public class DummyFiles {
 
     public static List<String> sampleResourceNames() {
 
-        return Stream.of(WellKnownFileTypeSuffix.values())
+        return Stream.of(WellKnownFileTypeSuffix.knownValues())
                 .map(e -> SAMPLE_UUID + e.getSuffix())
                 .collect(Collectors.toList());
     }

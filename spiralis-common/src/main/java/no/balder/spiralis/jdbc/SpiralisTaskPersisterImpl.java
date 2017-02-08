@@ -38,8 +38,8 @@ public class SpiralisTaskPersisterImpl implements SpiralisTaskPersister {
         LOGGER.debug("Saving " + spiralisTask);
 
         // TODO: rewrite with insert into .... select
-        //                                                             1           2           3       4       5       6               7           8           9           10          11                  12
-        final String INSERT_INTO_MESSAGE_SQL = "insert into message (account_id, direction, sender, receiver, channel, message_uuid, document_id, process_id, ap_name, payload_url, native_evidence_url, received ) values(?,?,?,?,?,?,?,?,?,?,?,?)";
+        //                                                             1           2           3       4       5       6               7           8           9           10          11                  12            13
+        final String INSERT_INTO_MESSAGE_SQL = "insert into message (account_id, direction, sender, receiver, channel, message_uuid, document_id, process_id, ap_name, payload_url, native_evidence_url, received, transmission_id ) values(?,?,?,?,?,?,?,?,?,?,?,?,?)";
         Connection con = null;
         try {
             con = dataSource.getConnection();
@@ -52,7 +52,7 @@ public class SpiralisTaskPersisterImpl implements SpiralisTaskPersister {
             ps.setString(6, spiralisTask.getOurMessageId());
             ps.setString(7, spiralisTask.getHeader().getDocumentType().toString());
             ps.setString(8, spiralisTask.getHeader().getProcess().toString());
-            ps.setString(9, "UNKNOWN");
+            ps.setString(9, spiralisTask.getSendersApId());
             ps.setString(10, payloadUri.toString());
             if (evidencUri.isPresent()) {
                 ps.setString(11, evidencUri.get().toString());
@@ -65,6 +65,11 @@ public class SpiralisTaskPersisterImpl implements SpiralisTaskPersister {
             final Timestamp timestamp = Timestamp.valueOf(localDateTime);
 
             ps.setTimestamp(12, timestamp);
+
+            if (spiralisTask.getTransmissionId() != null) {
+                ps.setString(13, spiralisTask.getTransmissionId());
+            } else
+                ps.setString(13, null);
 
             ps.executeUpdate();
 

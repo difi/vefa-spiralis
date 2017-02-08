@@ -45,12 +45,8 @@ public class PayloadClassifierTest {
         int rem = 0;
 
         for (Path path : stream) {
-            final Optional<WellKnownFileTypeSuffix> classification = PayloadClassifier.classify(path);
-            if (!classification.isPresent()) {
-                unknown++;
-            } else {
-                final WellKnownFileTypeSuffix suffix = classification.get();
-                switch (suffix) {
+
+                switch (PayloadClassifier.classify(path)) {
                     case AS2_RECEIPT:
                         receipt++;
                         break;
@@ -60,11 +56,13 @@ public class PayloadClassifierTest {
                     case REM_EVIDENCE:
                         rem++;
                         break;
+                    case UNKNOWN:
+                        unknown++;
+                        break;
                     default:
-                        throw new IllegalStateException("There is a bug in your test!");
+                        throw new IllegalStateException("There is a bug in your test for path " + path);
                 }
             }
-        }
 
         assertEquals(unknown, 1, "Did not manage to classify the unknonw");
         assertEquals(receipt, 1, "Receipt not classified");

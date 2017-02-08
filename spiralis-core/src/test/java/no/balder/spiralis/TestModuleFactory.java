@@ -2,7 +2,6 @@ package no.balder.spiralis;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
-import eu.peppol.persistence.guice.RepositoryModule;
 import eu.peppol.persistence.test.TestInMemoryDatabaseModule;
 import no.balder.spiralis.guice.JmsModule;
 import org.testng.IModuleFactory;
@@ -46,7 +45,7 @@ public class TestModuleFactory implements IModuleFactory {
         @Override
         protected void configure() {
 
-            binder().install(new RepositoryModule());
+            // binder().install(new RepositoryModule());
             binder().install(new TestInMemoryDatabaseModule());
             binder().install(new JmsModule(brokerUrl));
         }

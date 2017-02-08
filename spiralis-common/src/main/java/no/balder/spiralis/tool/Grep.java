@@ -1,34 +1,5 @@
 package no.balder.spiralis.tool;
-/*
- * Copyright (c) 2001, 2014, Oracle and/or its affiliates. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- *   - Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *
- *   - Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *
- *   - Neither the name of Oracle or the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
- * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,21 +10,90 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
-/* Search a list of files for lines that match a given regular-expression
- * pattern.  Demonstrates NIO mapped byte buffers, charsets, and regular
- * expressions.
+
+/**
+ * Poor mans grep utility.
+ *
+ * For one time searches, use the static method.
+ *
+ * If you are going to make several searches in the same file, use the instance methods.
+ *
+ * @author steinar
  */
-
 public class Grep {
+
+
+    // Holds the data in memory
+    private final CharBuffer charBuffer;
+
+    /**
+     * Loads the data from the supplied file into memory, making it available for subsequent application of
+     * regexp {@link Pattern} instances.
+     *
+     * @param file file to load
+     */
+    public Grep(File file) {
+
+        try (FileInputStream fis = new FileInputStream(file); FileChannel fc = fis.getChannel()) {
+
+            // Get the file's size and then map it into memory
+            int sz = (int) fc.size();
+            MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, sz);
+
+            final CharsetDecoder charsetDecoder = Charset.forName("UTF-8").newDecoder();
+
+            // Decode the file into a char buffer
+            charBuffer = charsetDecoder.decode(bb);
+
+        } catch (FileNotFoundException e) {
+            throw new IllegalArgumentException("File not found " + file, e);
+        } catch (IOException e) {
+            throw new IllegalStateException("I/O error while inspecting file " + file,e);
+        }
+    }
+
+    /**
+     * Provides access to the {@link CharBuffer} in case you want to perform your own magic {@link Pattern}
+     * matching.
+     *
+     * @return reference to the in-memory representation of the file.
+     */
+    public CharBuffer getCharBuffer() {
+        return charBuffer;
+    }
+
+    /**
+     * Searches the loaded {@link CharBuffer} for given pattern, returns a list of the group id of the regexp'es matched
+     *
+     * @param pattern
+     * @param groupIndex
+     * @return
+     */
+    public List<String> grep(Pattern pattern, int groupIndex) {
+
+        List<String> results = new ArrayList<>();
+        Matcher matcher = pattern.matcher(charBuffer);
+        while (matcher.find()) {
+            if (matcher.groupCount() >= groupIndex) {
+                results.add(matcher.group(groupIndex));
+            }
+        }
+        return results;
+    }
+
+    public String grepFirstGroup(Pattern pattern) {
+        Matcher m = pattern.matcher(charBuffer);
+        if (m.find()) {
+            return m.group(1);
+        }
+        
+        else return null;
+    }
 
 
     /**
@@ -89,7 +129,6 @@ public class Grep {
                     result.add(matcher.group(groupIndex));
                 }
             }
-
             return result;
         } catch (FileNotFoundException e) {
             throw new IllegalArgumentException("File not found " + file, e);

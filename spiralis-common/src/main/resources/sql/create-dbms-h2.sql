@@ -74,7 +74,8 @@ CREATE TABLE `message` (
   `sender` varchar(32) NOT NULL COMMENT 'PPID of sender',
   `receiver` varchar(32) NOT NULL COMMENT 'PPID of receiver',
   `channel` varchar(128) NOT NULL comment 'Channel in which message was received',
-  `message_uuid` varchar(36) not NULL COMMENT 'UUID assigned when message is received by us, not matter what the source is.',
+  `message_uuid` varchar(128) not NULL COMMENT 'UUID assigned when message is received by us, not matter what the source is.',
+  `transmission_id` varchar(255) comment 'Transmission ID (AS2 Message-ID) assigned by sender',
   `document_id` varchar(256) NOT NULL COMMENT 'document type id',
   `process_id` varchar(128) DEFAULT NULL COMMENT 'Process type id',
   `remote_host` varchar(128) DEFAULT NULL COMMENT 'Senders AS2-From header',
@@ -87,6 +88,7 @@ CREATE TABLE `message` (
   CONSTRAINT direction_enum check(direction in ('IN','OUT')),
   CONSTRAINT `message_ibfk_1` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`)
 ) ;
+
 
 /** The oubound queue implementation */
 CREATE TABLE `outbound_message_queue` (

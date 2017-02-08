@@ -1,5 +1,9 @@
 package no.balder.spiralis.payload;
 
+import com.sun.org.apache.regexp.internal.RE;
+
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -12,7 +16,8 @@ public enum WellKnownFileTypeSuffix {
 
     PAYLOAD("-doc.xml"),
     AS2_RECEIPT("-rcpt.smime"),
-    REM_EVIDENCE("-rem.xml");
+    REM_EVIDENCE("-rem.xml"),
+    UNKNOWN("-unknown.unknown");
 
     private final String suffix;
 
@@ -31,8 +36,14 @@ public enum WellKnownFileTypeSuffix {
      * @return
      */
     public static String globOfAllTypesInSubdirs() {
-        final String listOfTypes = Stream.of(WellKnownFileTypeSuffix.values()).map(WellKnownFileTypeSuffix::getSuffix).collect(Collectors.joining(","));
+        final String listOfTypes = Stream.of(PAYLOAD, AS2_RECEIPT, REM_EVIDENCE)
+                .map(WellKnownFileTypeSuffix::getSuffix)
+                .collect(Collectors.joining(","));
         final String glob = "glob:**{" + listOfTypes + "}";
         return glob;
+    }
+
+    public static WellKnownFileTypeSuffix[] knownValues() {
+        return new WellKnownFileTypeSuffix[] {PAYLOAD, AS2_RECEIPT, REM_EVIDENCE};
     }
 }

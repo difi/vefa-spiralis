@@ -13,15 +13,15 @@ import java.util.Optional;
 class PayloadClassifier {
 
 
-    static Optional<WellKnownFileTypeSuffix> classify(Path path) {
+    static WellKnownFileTypeSuffix classify(Path path) {
         
         for (WellKnownFileTypeSuffix wellKnownFileTypeSuffix : WellKnownFileTypeSuffix.values()) {
 
             final Path fileName = path.getFileName();
             if (fileName.toString().endsWith(wellKnownFileTypeSuffix.getSuffix()))
-                return Optional.of(wellKnownFileTypeSuffix);
+                return wellKnownFileTypeSuffix;
         }
 
-        return Optional.empty();
+        return WellKnownFileTypeSuffix.UNKNOWN;
     }
 }
