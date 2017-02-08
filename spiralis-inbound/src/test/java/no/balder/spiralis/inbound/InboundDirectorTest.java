@@ -58,5 +58,4 @@ public class InboundDirectorTest {
         long elapsedMs = TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS);
         System.out.println("Processed " + statistics.getProcessed() + " in " + elapsedMs);
     }
-
 }
