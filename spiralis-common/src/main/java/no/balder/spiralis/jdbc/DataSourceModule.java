@@ -3,7 +3,6 @@ package no.balder.spiralis.jdbc;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.name.Named;
-import no.balder.spiralis.inbound.SpiralisTask;
 import org.h2.jdbcx.JdbcDataSource;
 import org.h2.tools.RunScript;
 import org.slf4j.Logger;
@@ -45,7 +44,7 @@ public class DataSourceModule extends AbstractModule{
 
     @Provides
     @Named("inMemory")
-    @Singleton
+    @Singleton                                                                      
     DataSource provideDataSourceInMemory() {
         JdbcDataSource ds = createH2DataSource();
         createDatabaseSchema(ds);

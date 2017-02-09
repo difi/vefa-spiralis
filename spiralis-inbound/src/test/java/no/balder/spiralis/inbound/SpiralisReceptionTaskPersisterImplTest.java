@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import no.balder.spiralis.config.SpiralisInboundTestModuleFactory;
 import no.balder.spiralis.jdbc.SpiralisTaskPersister;
 import no.balder.spiralis.testutil.DummyFiles;
-import no.difi.vefa.peppol.common.model.ParticipantIdentifier;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Guice;
@@ -21,7 +20,7 @@ import java.util.Optional;
  *         Time: 18.12
  */
 @Guice(moduleFactory = SpiralisInboundTestModuleFactory.class)
-public class SpiralisTaskPersisterImplTest {
+public class SpiralisReceptionTaskPersisterImplTest {
 
     private Path rootPath;
 
@@ -31,7 +30,7 @@ public class SpiralisTaskPersisterImplTest {
 
     @BeforeMethod
     public void setUp() throws Exception {
-        rootPath = DummyFiles.createInboundDummyFiles();
+        rootPath = DummyFiles.createInboundDummyFilesInRootWithSubdirs();
     }
 
     @AfterMethod
@@ -45,11 +44,11 @@ public class SpiralisTaskPersisterImplTest {
         // Traverses the dummy files ..
         final List<Path> paths = DummyFiles.locatePayloadFilesIn(rootPath);
 
-        // Creates the SpiralisTask based upon the contents in the sample dummy files
-        final SpiralisTask spiralisTask = SpiralisTaskFactory.insepctInbound(paths.get(0));
+        // Creates the SpiralisReceptionTask based upon the contents in the sample dummy files
+        final SpiralisReceptionTask spiralisReceptionTask = SpiralisTaskFactory.insepctInbound(paths.get(0));
 
 
-        spiralisTaskPersister.saveInboundTask(spiralisTask, new URI("azure", "microsoft", "/inbound/test", null),
+        spiralisTaskPersister.saveInboundTask(spiralisReceptionTask, new URI("azure", "microsoft", "/inbound/test", null),
                 Optional.ofNullable(new URI("azure", "microsoft", "/inbound/test/x.smime", null)));
     }
 

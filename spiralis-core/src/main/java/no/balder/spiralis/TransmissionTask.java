@@ -75,7 +75,7 @@ public class TransmissionTask extends AbstractTask implements Task {
         log.debug("MessageId to transmit is " + request.getMessageId());
 
         TransmissionRequestBuilder builder = requestBuilder
-                .messageId(request.getMessageId())
+                //.messageId(request.getMessageId())
                 .documentType(PeppolDocumentTypeId.valueOf(request.getDocumentTypeId()))
                 .processType(PeppolProcessTypeId.valueOf(request.getProcessTypeId()))
                 .sender(new ParticipantId(request.getSender()))

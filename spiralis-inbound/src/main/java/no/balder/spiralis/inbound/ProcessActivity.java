@@ -2,17 +2,16 @@ package no.balder.spiralis.inbound;
 
 import com.google.inject.Inject;
 import no.balder.spiralis.jdbc.SpiralisTaskPersister;
+import no.balder.spiralis.payload.PayloadPathUtil;
 import no.balder.spiralis.payload.PayloadStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -25,25 +24,33 @@ class ProcessActivity {
     public static final Logger LOGGER = LoggerFactory.getLogger(ProcessActivity.class);
 
     public static final int N_THREADS = 8;
-    private final LinkedBlockingQueue<SpiralisTask> createdTasksQueue;
+    private final BlockingQueue<SpiralisReceptionTask> createdTasksQueue;
     private final PayloadStore payloadStore;
     private final SpiralisTaskPersister spiralisTaskPersister;
+    private final Path inboundRootPath;
+    private final Path archivePath;
     int threadNumber = 0;
     private ExecutorService executorService;
     private AtomicLong processCount = new AtomicLong(0);
 
     @Inject
-    public ProcessActivity(LinkedBlockingQueue<SpiralisTask> createdTasksQueue, PayloadStore payloadStore, SpiralisTaskPersister spiralisTaskPersister) {
+    public ProcessActivity(BlockingQueue<SpiralisReceptionTask> createdTasksQueue, PayloadStore payloadStore, SpiralisTaskPersister spiralisTaskPersister, Path inboundRootPath, Path archivePath) {
         this.createdTasksQueue = createdTasksQueue;
         this.payloadStore = payloadStore;
         this.spiralisTaskPersister = spiralisTaskPersister;
+        this.inboundRootPath = inboundRootPath;
+        this.archivePath = archivePath;
+
+        if (PayloadPathUtil.overlaps(inboundRootPath, archivePath)) {
+            throw new InvalidPathException("The paths overlap each other", inboundRootPath + " and " + archivePath + " can not be used in combination");
+        }
     }
 
-    public void invoke() {
+    public void startThreads() {
         startProcessActivity(createdTasksQueue);
     }
 
-    private void startProcessActivity(LinkedBlockingQueue<SpiralisTask> createdTasksQueue) {
+    private void startProcessActivity(BlockingQueue<SpiralisReceptionTask> createdTasksQueue) {
 
         executorService = Executors.newFixedThreadPool(N_THREADS);
 
@@ -52,7 +59,7 @@ class ProcessActivity {
         }
     }
 
-    private Callable<Void> createSpiralisTaskProcessor(LinkedBlockingQueue<SpiralisTask> createdTasksQueue) {
+    private Callable<Void> createSpiralisTaskProcessor(BlockingQueue<SpiralisReceptionTask> createdTasksQueue) {
         return new Callable<Void>() {
             @Override
             public Void call() {
@@ -61,39 +68,43 @@ class ProcessActivity {
                 for (; ; ) {
                     // All errors needs to be catched in order to continue is something goes wrong
                     try {
-                        SpiralisTask spiralisTask = null;
+                        SpiralisReceptionTask spiralisReceptionTask = null;
                         try {
-                            spiralisTask = createdTasksQueue.take();
-                            processCount.incrementAndGet();
+                            spiralisReceptionTask = createdTasksQueue.take();
                         } catch (InterruptedException e) {
                             LOGGER.error("Error taking from queue: " + e.getMessage(), e);
                             continue;
                         }
-                        final Path path = spiralisTask.getPayloadPath();
 
-                        LOGGER.debug("Processing " + spiralisTask);
+                        final Path path = spiralisReceptionTask.getPayloadPath();
 
-                        String blobName = BlobName.createInboundBlobName(spiralisTask, spiralisTask::getPayloadPath);
+                        LOGGER.debug("Processing " + spiralisReceptionTask);
+
+                        String blobName = BlobName.createInboundBlobName(spiralisReceptionTask, spiralisReceptionTask::getPayloadPath);
+
                         LOGGER.debug("Uploading " + path + " to " + blobName);
                         final URI payloadBlobUri = payloadStore.upload(path, blobName);
                         LOGGER.debug("Uploaded " + payloadBlobUri);
 
                         // Handles the transmission receipt, if present
                         URI smimeBlobUri = null;
-                        if (spiralisTask.getSmimePath() != null) {
-                            String smimeBlobName = BlobName.createInboundBlobName(spiralisTask, spiralisTask::getSmimePath);
-                            LOGGER.debug("Uploading " + spiralisTask.getSmimePath() + " to " + smimeBlobName);
-                            smimeBlobUri = payloadStore.upload(spiralisTask.getSmimePath(), smimeBlobName);
+                        if (spiralisReceptionTask.getSmimePath() != null) {
+                            String smimeBlobName = BlobName.createInboundBlobName(spiralisReceptionTask, spiralisReceptionTask::getSmimePath);
+                            LOGGER.debug("Uploading " + spiralisReceptionTask.getSmimePath() + " to " + smimeBlobName);
+                            smimeBlobUri = payloadStore.upload(spiralisReceptionTask.getSmimePath(), smimeBlobName);
                             LOGGER.debug("Uploaded " + smimeBlobUri);
                         } else {
-                            LOGGER.warn("No transmission receipt found for " + spiralisTask);
+                            LOGGER.warn("No transmission receipt found for " + spiralisReceptionTask);
                         }
 
                         // Inserts the metadata into the database
-                        final Long aLong = spiralisTaskPersister.saveInboundTask(spiralisTask, payloadBlobUri, Optional.ofNullable(smimeBlobUri));
+                        final Long aLong = spiralisTaskPersister.saveInboundTask(spiralisReceptionTask, payloadBlobUri, Optional.ofNullable(smimeBlobUri));
 
-                        // Mark payload as processed
-                        
+                        // Mark payload as processed by moving the files into the archive
+                        PayloadPathUtil.moveWithSubdirIntact(inboundRootPath, spiralisReceptionTask.getPayloadPath(), archivePath);
+
+                        if (spiralisReceptionTask.getSmimePath() != null)
+                            PayloadPathUtil.moveWithSubdirIntact(inboundRootPath, spiralisReceptionTask.getSmimePath(), archivePath);
 
                     } catch (Exception e) {
                         LOGGER.error("Error during processing " + e.getMessage(), e);
@@ -104,6 +115,8 @@ class ProcessActivity {
                         } else
                             continue;
                     }
+
+                    processCount.incrementAndGet();
                 }
 
                 return null;

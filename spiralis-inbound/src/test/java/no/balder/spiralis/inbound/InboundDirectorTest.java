@@ -32,15 +32,20 @@ public class InboundDirectorTest {
 
     @Inject
     SpiralisTaskPersister spiralisTaskPersister;
+
     @Test
     public void testStart() throws Exception {
 
-        // final Path inboundDummyFiles = DummyFiles.createInboundDummyFiles();
-        final Path dirPath = Paths.get("/var/peppol/IN");
+        // final Path inboundDummyFiles = DummyFiles.createInboundDummyFilesInRootWithSubdirs();
+        final Path inboundDirPath = Paths.get("/var/peppol/IN");
+        final Path archiveDirPath = Paths.get("/var/peppol/ARCHIVE");
 
         final String azureConnectionString = config.getString(SpiralisConfigProperty.SPIRALIS_AZURE_CONNECT);
+        final AzurePayloadStore payloadStore = new AzurePayloadStore(azureConnectionString);
 
-        final InboundDirector inboundDirector = new InboundDirector(dirPath, "glob:**" + WellKnownFileTypeSuffix.PAYLOAD.getSuffix(), new AzurePayloadStore(azureConnectionString), spiralisTaskPersister);
+        final InboundDirector inboundDirector = new InboundDirector(inboundDirPath, archiveDirPath,
+                "glob:**" + WellKnownFileTypeSuffix.PAYLOAD.getSuffix(),
+                payloadStore, spiralisTaskPersister);
 
         inboundDirector.startThreads();
 

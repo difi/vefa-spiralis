@@ -1,6 +1,6 @@
 package no.balder.spiralis.jdbc;
 
-import no.balder.spiralis.inbound.SpiralisTask;
+import no.balder.spiralis.inbound.SpiralisReceptionTask;
 
 import java.net.URI;
 import java.util.Optional;
@@ -12,5 +12,5 @@ import java.util.Optional;
  */
 public interface SpiralisTaskPersister {
 
-    Long saveInboundTask(SpiralisTask spiralisTask, URI payloadBlobUri, Optional<URI> smimeBlobUri);
+    Long saveInboundTask(SpiralisReceptionTask spiralisReceptionTask, URI payloadBlobUri, Optional<URI> smimeBlobUri);
 }

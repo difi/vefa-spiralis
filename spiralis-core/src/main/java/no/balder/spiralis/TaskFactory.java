@@ -1,6 +1,6 @@
 package no.balder.spiralis;
 
-import eu.peppol.document.SbdhWrapper;
+// import eu.peppol.document.SbdhWrapper;
 import eu.peppol.outbound.OxalisOutboundComponent;
 
 import javax.inject.Inject;
@@ -38,6 +38,7 @@ public class TaskFactory {
         List<SbdhInspectionTask> result = new ArrayList<>();
         for (int i = 0; i < qty; i++) {
             Session session = jmsConnection.createSession(true, -1);
+/*
             SbdhInspectionTask sbdhInspectionTask = new SbdhInspectionTask(session,
                     AdapterFactory.createConsumerAdapter(session, inputPlace),
                     AdapterFactory.createProducerAdapter(session, outputPlace),
@@ -45,6 +46,7 @@ public class TaskFactory {
                     new SbdhWrapper()
             );
             result.add(sbdhInspectionTask);
+*/
         }
         return result;
     }

@@ -31,7 +31,7 @@ public class ScanActivityTest {
     public void testStartThreads() throws Exception {
 
         // Creates dummy files
-        final Path testRootPath = DummyFiles.createInboundDummyFiles();
+        final Path testRootPath = DummyFiles.createInboundDummyFilesInRootWithSubdirs();
 
         // Creates the ScanActivity instance
         BlockingQueue<Path> queue = new LinkedBlockingQueue<>();

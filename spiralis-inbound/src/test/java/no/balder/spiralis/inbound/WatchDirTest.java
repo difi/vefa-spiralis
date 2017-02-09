@@ -22,7 +22,7 @@ public class WatchDirTest {
     @Test
     public void testProcessEvents() throws Exception {
 
-        final Path path = DummyFiles.createInboundDummyFiles();
+        final Path path = DummyFiles.createInboundDummyFilesInRootWithSubdirs();
 
         final BlockingQueue<Path> queue = new LinkedBlockingQueue<>();
 

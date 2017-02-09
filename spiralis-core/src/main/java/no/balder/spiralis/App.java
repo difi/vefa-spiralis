@@ -3,8 +3,6 @@ package no.balder.spiralis;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import eu.peppol.persistence.guice.OxalisDataSourceModule;
-import eu.peppol.persistence.guice.RepositoryModule;
-import eu.peppol.util.OxalisProductionConfigurationModule;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
@@ -55,9 +53,9 @@ public class App {
 
 
         Injector injector = Guice.createInjector(
-                new RepositoryModule(),
+                // new RepositoryModule(),
                 new OxalisDataSourceModule(),
-                new OxalisProductionConfigurationModule(),
+                // bnew OxalisProductionConfigurationModule(),
                 new JmsModule(effectiveBrokerUrl)
         );
 

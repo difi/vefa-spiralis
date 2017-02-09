@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -34,7 +35,7 @@ public class DummyFiles {
      * @return
      * @throws IOException
      */
-    public static Path createInboundDummyFiles(String... subPaths) throws IOException {
+    public static Path createInboundDummyFilesInRootWithSubdirs(String... subPaths) throws IOException {
 
         // Creates the root directory
         Path root = Files.createTempDirectory("test");
@@ -67,12 +68,27 @@ public class DummyFiles {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * List all files in supplied directory, no traversal of subdirectories.
+     *
+     * @param rootPath
+     * @return
+     * @throws IOException
+     */
     public static List<Path> locatePayloadFilesIn(Path rootPath) throws IOException {
-        final DirectoryStream<Path> stream = Files.newDirectoryStream(rootPath, "*" + WellKnownFileTypeSuffix.PAYLOAD.getSuffix());
-        final List<Path> paths = StreamSupport.stream(stream.spliterator(), false).collect(Collectors.toList());
-        if (paths.isEmpty()) {
-            throw new IllegalStateException("No payload files found in " + rootPath);
-        }
+        final List<Path> paths = new ArrayList<>();
+
+        final PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher("glob:**" + WellKnownFileTypeSuffix.PAYLOAD.getSuffix());
+        Files.walkFileTree(rootPath, new SimpleFileVisitor<Path>(){
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                if (pathMatcher.matches(file)) {
+                    paths.add(file);
+                }
+                return CONTINUE;
+            }
+        });
+
         return paths;
     }
 

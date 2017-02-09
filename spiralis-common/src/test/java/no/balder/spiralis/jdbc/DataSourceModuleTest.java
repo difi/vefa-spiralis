@@ -1,5 +1,6 @@
 package no.balder.spiralis.jdbc;
 
+import com.google.inject.Binding;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -35,6 +36,26 @@ public class DataSourceModuleTest {
     @Test
     public void testJdbcConfig() throws Exception {
 
+        // Overrides all parameteres in any external .conf-files
+        final Config config = createOverrideConf();
+
+        final Injector i2 = Guice.createInjector(new SpiralisConfigurationModule(config),
+                new DataSourceModule());
+
+        final DataSourceFactoryDbcp dataSourceFactoryDbcp = i2.getInstance(DataSourceFactoryDbcp.class);
+
+        // This only works on Steinars machine
+        if ("steinar".equals(System.getProperty("user.name"))) {
+            // Obtains the default DataSource
+            final DataSource dataSource = i2.getInstance(DataSource.class);
+            assertNotNull(dataSource);
+            final String url = dataSource.getConnection().getMetaData().getURL();
+            assertFalse(url.contains(":mem:"));
+        }
+
+    }
+
+    private Config createOverrideConf() {
         StringBuilder sb = new StringBuilder();
         sb.append(JDBC_CONNECTION_URI).append(" = ").append("\"jdbc:h2:~/.oxalis/ap;AUTO_SERVER=TRUE\"").append('\n');
         sb.append(JDBC_DRIVER_CLASS).append(" = ").append("\"org.h2.Driver\"").append('\n');
@@ -44,20 +65,7 @@ public class DataSourceModuleTest {
         sb.append(JDBC_USER).append(" = ").append("SA").append('\n');
         sb.append(JDBC_PASSWORD).append(" = ").append("\"\"").append('\n');
 
-        final Config config = ConfigFactory.parseString(sb.toString());
-
-        final Injector i2 = Guice.createInjector(new SpiralisConfigurationModule(config),
-                new DataSourceModule());
-
-        final DataSourceFactoryDbcp dataSourceFactoryDbcp = i2.getInstance(DataSourceFactoryDbcp.class);
-
-        // This only works on Steinars machine
-        if ("steinar".equals(System.getProperty("user.name"))) {
-            final DataSource dataSource = i2.getInstance(DataSource.class);
-            assertNotNull(dataSource);
-            final String url = dataSource.getConnection().getMetaData().getURL();
-            assertFalse(url.contains(":mem:"));
-        }
+        return ConfigFactory.parseString(sb.toString());
     }
 
     /**

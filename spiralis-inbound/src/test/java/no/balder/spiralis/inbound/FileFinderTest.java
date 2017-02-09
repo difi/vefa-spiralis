@@ -31,7 +31,7 @@ public class FileFinderTest {
     @Test
     public void testFindFiles() throws Exception {
 
-        Path root = DummyFiles.createInboundDummyFiles();
+        Path root = DummyFiles.createInboundDummyFilesInRootWithSubdirs();
 
         BlockingQueue<Path> queue = new LinkedBlockingDeque<>();
 

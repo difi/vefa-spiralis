@@ -14,8 +14,8 @@ import java.util.concurrent.*;
  * <ol>
  *     <li>{@link ScanActivity} - scans a directory tree for existing and new payload files together with any
  *     associated metadata files and transmission evidence files</li>
- *     <li>{@link CreateTaskActivity} - parses the files and creates {@link SpiralisTask} objects, which are passed on to</li>
- *     <li>{@link ProcessActivity} - processes the {@link SpiralisTask} instances.</li>
+ *     <li>{@link CreateTaskActivity} - parses the files and creates {@link SpiralisReceptionTask} objects, which are passed on to</li>
+ *     <li>{@link ProcessActivity} - processes the {@link SpiralisReceptionTask} instances.</li>
  * </ol>
  *
  * @author steinar
@@ -26,7 +26,8 @@ public class InboundDirector {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(InboundDirector.class);
 
-    private final Path dirPath;
+    private final Path inboundDirPath;
+    private final Path archiveDirPath;
     private final String fileMatchGlob;
     private final PayloadStore payloadStore;
     private final SpiralisTaskPersister spiralisTaskPersister;
@@ -34,8 +35,8 @@ public class InboundDirector {
     // Holds the paths of the scanned input files.
     private final BlockingQueue<Path> scannedTasksQueue;
 
-    // Holds the SpiralisTask instances, which have been created from the scanned paths
-    private final LinkedBlockingQueue<SpiralisTask> createdTasksQueue;
+    // Holds the SpiralisReceptionTask instances, which have been created from the scanned paths
+    private final LinkedBlockingQueue<SpiralisReceptionTask> createdTasksQueue;
 
     // Holds references to the activity instances, which in turn may contain several tasks being run in
     // threads.
@@ -45,14 +46,15 @@ public class InboundDirector {
 
 
     /**
-     *
-     * @param dirPath root path of the directory tree to scan and watch.
+     * @param inboundDirPath root path of the directory tree to scan and watch.
+     * @param archiveDirPath root path in which the processed files should be archived.
      * @param fileMatchGlob the "glob" used to match files during scanning in the {@link ScanActivity}
      * @param payloadStore the {@link PayloadStore} instance to be used in the final {@link ProcessActivity}
      */
     @Inject
-    InboundDirector(Path dirPath, String fileMatchGlob, PayloadStore payloadStore, SpiralisTaskPersister spiralisTaskPersister) {
-        this.dirPath = dirPath;
+    InboundDirector(Path inboundDirPath, Path archiveDirPath, String fileMatchGlob, PayloadStore payloadStore, SpiralisTaskPersister spiralisTaskPersister) {
+        this.inboundDirPath = inboundDirPath;
+        this.archiveDirPath = archiveDirPath;
         this.fileMatchGlob = fileMatchGlob;
         this.payloadStore = payloadStore;
         this.spiralisTaskPersister = spiralisTaskPersister;
@@ -64,16 +66,16 @@ public class InboundDirector {
     public void startThreads() throws InterruptedException {
 
         // Starts scanning the root directory path for existing and new files to be processed
-        scanActivity = new ScanActivity(dirPath, fileMatchGlob, scannedTasksQueue);
+        scanActivity = new ScanActivity(inboundDirPath, fileMatchGlob, scannedTasksQueue);
         scanActivity.startThreads();
 
-        // For each scanned path, creates work order requests in as SpiralisTask
+        // For each scanned path, creates work order requests in as SpiralisReceptionTask
         createTaskActivity = new CreateTaskActivity(scannedTasksQueue, createdTasksQueue);
         createTaskActivity.invoke();
 
-        // Finally, we fire up the threads that will process the SpiralisTask instances.
-        processActivity = new ProcessActivity(createdTasksQueue, payloadStore, spiralisTaskPersister);
-        processActivity.invoke();
+        // Finally, we fire up the threads that will process the SpiralisReceptionTask instances.
+        processActivity = new ProcessActivity(createdTasksQueue, payloadStore, spiralisTaskPersister, inboundDirPath, archiveDirPath);
+        processActivity.startThreads();
     }
 
     public Statistics getProcessingStatistics() {

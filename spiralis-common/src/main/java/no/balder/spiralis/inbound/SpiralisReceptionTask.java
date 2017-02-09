@@ -4,26 +4,35 @@ import no.difi.vefa.peppol.common.model.Header;
 
 import java.nio.file.Path;
 import java.time.temporal.TemporalAccessor;
+import java.util.UUID;
 
 /**
  * @author steinar
  *         Date: 04.02.2017
  *         Time: 10.42
  */
-public class SpiralisTask {
+public class SpiralisReceptionTask {
+
+    // Holds the unique identification of this reception
+    private final UUID receptionId = UUID.randomUUID();
+
     private final Path payloadPath;        // the payload
     private final Header header;    // SBDH header
     private Path smimePath;         // the transmission receipt
     private String transmissionId;  // the transmission-ID retrieved from the receipt
     private TemporalAccessor received;
-    private String ourMessageId;
+    private String oxalisMessageId;
     private String sendersApId = "UNKNOWN";
 
 
-    public SpiralisTask(Path payloadPath, Header header) {
+    public SpiralisReceptionTask(Path payloadPath, Header header) {
 
         this.payloadPath = payloadPath;
         this.header = header;
+    }
+
+    public UUID getReceptionId() {
+        return receptionId;
     }
 
     public Path getPayloadPath() {
@@ -61,22 +70,25 @@ public class SpiralisTask {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("SpiralisTask{");
-        sb.append("payloadPath=").append(payloadPath);
+        final StringBuilder sb = new StringBuilder("SpiralisReceptionTask{");
+        sb.append("receptionId=").append(receptionId);
+        sb.append(", payloadPath=").append(payloadPath);
         sb.append(", header=").append(header);
         sb.append(", smimePath=").append(smimePath);
         sb.append(", transmissionId='").append(transmissionId).append('\'');
         sb.append(", received=").append(received);
+        sb.append(", oxalisMessageId='").append(oxalisMessageId).append('\'');
+        sb.append(", sendersApId='").append(sendersApId).append('\'');
         sb.append('}');
         return sb.toString();
     }
 
-    public void setOurMessageId(String ourMessageId) {
-        this.ourMessageId = ourMessageId;
+    public void setOxalisMessageId(String oxalisMessageId) {
+        this.oxalisMessageId = oxalisMessageId;
     }
 
-    public String getOurMessageId() {
-        return ourMessageId;
+    public String getOxalisMessageId() {
+        return oxalisMessageId;
     }
 
     public void setSendersApId(String sendersApId) {

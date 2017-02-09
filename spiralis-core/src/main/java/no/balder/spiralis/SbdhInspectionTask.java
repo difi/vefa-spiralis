@@ -1,7 +1,7 @@
 package no.balder.spiralis;
 
 import eu.peppol.PeppolStandardBusinessHeader;
-import eu.peppol.document.SbdhWrapper;
+// import eu.peppol.document.SbdhWrapper;
 import eu.peppol.identifier.InstanceId;
 import eu.peppol.identifier.ParticipantId;
 import eu.peppol.identifier.PeppolDocumentTypeId;
@@ -32,21 +32,22 @@ public class SbdhInspectionTask extends AbstractTask {
     private final ConsumerAdapter<OutboundTransmissionRequest> consumerAdapter;
     private final ProducerAdapter<OutboundTransmissionRequest> producerAdapter;
     private final ProducerAdapter<String> errorProducer;
-    private final SbdhWrapper sbdhWrapper;
+   // private final SbdhWrapper sbdhWrapper;
 
     private final AtomicLong processCount = new AtomicLong(0);
 
     public SbdhInspectionTask(Session queueSession,
                               ConsumerAdapter<OutboundTransmissionRequest> consumerAdapter,
                               ProducerAdapter<OutboundTransmissionRequest> producerAdapter,
-                              ProducerAdapter<String> errorProducer,
-                              SbdhWrapper sbdhWrapper) {
+                              ProducerAdapter<String> errorProducer //,
+    //                          SbdhWrapper sbdhWrapper
+    ) {
         super(queueSession);
 
         this.consumerAdapter = consumerAdapter;
         this.producerAdapter = producerAdapter;
         this.errorProducer = errorProducer;
-        this.sbdhWrapper = sbdhWrapper;
+     //    this.sbdhWrapper = sbdhWrapper;
     }
 
     @Override
