@@ -71,7 +71,7 @@ public class TaskFactory {
 
             return tasks;
         } catch (JMSException e) {
-            throw new IllegalStateException("Unable to create transmission task, reason: " + e.getMessage(), e);
+            throw new IllegalStateException("Unable to create transport task, reason: " + e.getMessage(), e);
         }
     }
 

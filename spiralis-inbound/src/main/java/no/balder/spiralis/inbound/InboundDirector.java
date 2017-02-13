@@ -13,7 +13,7 @@ import java.util.concurrent.*;
  * Directs the following activities, which are furher broken into various tasks:
  * <ol>
  *     <li>{@link ScanActivity} - scans a directory tree for existing and new payload files together with any
- *     associated metadata files and transmission evidence files</li>
+ *     associated metadata files and transport evidence files</li>
  *     <li>{@link CreateTaskActivity} - parses the files and creates {@link SpiralisReceptionTask} objects, which are passed on to</li>
  *     <li>{@link ProcessActivity} - processes the {@link SpiralisReceptionTask} instances.</li>
  * </ol>

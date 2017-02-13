@@ -1,10 +1,10 @@
 package no.balder.spiralis.inbound;
 
+import no.balder.spiralis.transport.ReceptionId;
 import no.difi.vefa.peppol.common.model.Header;
 
 import java.nio.file.Path;
 import java.time.temporal.TemporalAccessor;
-import java.util.UUID;
 
 /**
  * @author steinar
@@ -14,12 +14,12 @@ import java.util.UUID;
 public class SpiralisReceptionTask {
 
     // Holds the unique identification of this reception
-    private final UUID receptionId = UUID.randomUUID();
+    private final ReceptionId receptionId = new ReceptionId();
 
     private final Path payloadPath;        // the payload
     private final Header header;    // SBDH header
-    private Path smimePath;         // the transmission receipt
-    private String transmissionId;  // the transmission-ID retrieved from the receipt
+    private Path smimePath;         // the transport receipt
+    private String transmissionId;  // the transport-ID retrieved from the receipt
     private TemporalAccessor received;
     private String oxalisMessageId;
     private String sendersApId = "UNKNOWN";
@@ -31,7 +31,7 @@ public class SpiralisReceptionTask {
         this.header = header;
     }
 
-    public UUID getReceptionId() {
+    public ReceptionId getReceptionId() {
         return receptionId;
     }
 

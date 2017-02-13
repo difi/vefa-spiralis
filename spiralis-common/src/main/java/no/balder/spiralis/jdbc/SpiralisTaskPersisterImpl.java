@@ -2,6 +2,8 @@ package no.balder.spiralis.jdbc;
 
 import com.google.inject.Inject;
 import no.balder.spiralis.inbound.SpiralisReceptionTask;
+import no.balder.spiralis.transport.ReceptionId;
+import no.balder.spiralis.transport.ReceptionMetaData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +51,8 @@ public class SpiralisTaskPersisterImpl implements SpiralisTaskPersister {
                 "       payload_url, \n" +  // 10
                 "       native_evidence_url, \n" + // 11
                 "       transmission_id, \n" +  // 12
-                "       account_id ) \n" +  // 13
+                "       instance_id, \n" +  // 13
+                "       account_id ) \n" +  // 14
                 "       values(?," + // 1 - direction
                 "           ?" +    // 2 - received
                 "           ,?" +   // 3 - sender
@@ -61,9 +64,10 @@ public class SpiralisTaskPersisterImpl implements SpiralisTaskPersister {
                 "           ,?" +   // 9 - Access Point identifier (sender's)
                 "           ,?" +   // 10 - URI of payload
                 "           ,?" +   // 11 - URI of evidence (AS2 MDN)
-                "           ,?" +   // 12 - transmission id
+                "           ,?" +   // 12 - transport id
+                "           ,?" +   // 13 - SBDH instance identifier
                 "           ,coalesce(\n" +
-                "               (select account_id from account_receiver where participant_id=?), null)\n" +   // 13
+                "               (select account_id from account_receiver where participant_id=?), null)\n" +   // 14
                 "       )";
         Connection con = null;
         try {
@@ -82,7 +86,7 @@ public class SpiralisTaskPersisterImpl implements SpiralisTaskPersister {
             ps.setString(3, spiralisReceptionTask.getHeader().getSender().getIdentifier().toString());
             ps.setString(4, spiralisReceptionTask.getHeader().getReceiver().getIdentifier().toString());
             ps.setString(5, "PEPPOL");
-            ps.setString(6, spiralisReceptionTask.getReceptionId().toString());
+            ps.setString(6, spiralisReceptionTask.getReceptionId().value());
             ps.setString(7, spiralisReceptionTask.getHeader().getDocumentType().getIdentifier().toString());
             ps.setString(8, spiralisReceptionTask.getHeader().getProcess().getIdentifier().toString());
             ps.setString(9, spiralisReceptionTask.getSendersApId());
@@ -99,7 +103,8 @@ public class SpiralisTaskPersisterImpl implements SpiralisTaskPersister {
             } else
                 ps.setString(12, null);
 
-            ps.setString(13, spiralisReceptionTask.getHeader().getReceiver().getIdentifier().toString());
+            ps.setString(13, spiralisReceptionTask.getHeader().getIdentifier().getValue());
+            ps.setString(14, spiralisReceptionTask.getHeader().getReceiver().getIdentifier().toString());
 
             ps.executeUpdate();
 
@@ -108,7 +113,7 @@ public class SpiralisTaskPersisterImpl implements SpiralisTaskPersister {
                 ResultSet rs = ps.getGeneratedKeys();
                 if (rs != null && rs.next()) {
                     generatedKey = rs.getLong(1);
-                    LOGGER.debug("Inserted SpiralisReceptionTask with msg_no={}", generatedKey);
+                    LOGGER.debug("Inserted SpiralisReceptionTask with msg_no={}, message_uuid={}", generatedKey, spiralisReceptionTask.getReceptionId().value());
                 } else {
                     LOGGER.error("Seems we were unable to retrieve the auto generated key");
                 }
@@ -129,6 +134,41 @@ public class SpiralisTaskPersisterImpl implements SpiralisTaskPersister {
                 }
         }
 
+    }
+
+    @Override
+    public Optional<ReceptionMetaData> findByReceptionId(ReceptionId receptionId) {
+
+        final String sql = "select * from message where message_uuid=?";
+        try (Connection con = dataSource.getConnection()) {
+            final PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, receptionId.value());
+            final ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                final ReceptionMetaData rm = new ReceptionMetaData();
+                rm.setMessageNo(rs.getInt("msg_no"));
+                rm.setAccountId(rs.getInt("account_id"));
+                rm.setDirection(rs.getString("direction"));
+                rm.setReceived(rs.getTimestamp("received"));
+                rm.setDelivered(rs.getTimestamp("delivered"));
+                rm.setSender(rs.getString("sender"));
+                rm.setReceiver(rs.getString("receiver"));
+                rm.setChannel(rs.getString("channel"));
+                rm.setReceptionId(rs.getString("message_uuid"));
+                rm.setTransmissionId(rs.getString("transmission_id"));
+                rm.setInstanceId(rs.getString("instance_id"));
+                rm.setDocumentTypeId(rs.getString("document_id"));
+                rm.setProcessTypeId(rs.getString("process_id"));
+                rm.setApName(rs.getString("ap_name"));
+                rm.setPayloadUrl(rs.getString("payload_url"));
+                rm.setNativeEvidenceUrl("native_evidence_url");
+                return Optional.of(rm);
+            } else
+                return Optional.empty();
+
+        } catch (SQLException e) {
+            throw new IllegalStateException("Unable to find data for receptionId " + receptionId);
+        }
     }
 
     public Long saveInboundTask2(SpiralisReceptionTask spiralisReceptionTask, URI payloadUri, Optional<URI> evidencUri) {

@@ -61,7 +61,7 @@ public class App {
 
         OutboundWorkflowBuilder outboundWorkflowBuilder = injector.getInstance(OutboundWorkflowBuilder.class);
 
-        // Has the end point for transmission been overridden?
+        // Has the end point for transport been overridden?
         if (optionSet.has(endPointUrlOption)) {
             URL url = optionSet.valueOf(endPointUrlOption);
             log.warn("PEPPOL access point URL has been overridden: " + url.toString());
@@ -71,7 +71,7 @@ public class App {
         }
 
 
-        log.info("Using " + optionSet.valueOf(paralellTransmissionTasks) + " paralell transmission tasks");
+        log.info("Using " + optionSet.valueOf(paralellTransmissionTasks) + " paralell transport tasks");
 
         OutboundWorkflow outboundWorkflow = outboundWorkflowBuilder
                 .trasmissionTaskCount(optionSet.valueOf(paralellTransmissionTasks)) // Number of paralell tasks
@@ -126,8 +126,8 @@ public class App {
                 maxNumberOfMessagesOption = accepts("m", "Maximum number of messages to process").withRequiredArg().ofType(Integer.class).defaultsTo(Integer.MAX_VALUE)
                         .describedAs("The number of messages to process before terminating");
 
-                paralellTransmissionTasks = accepts("p", "Number of paralell transmission tasks").withRequiredArg().ofType(Integer.class).defaultsTo(20)
-                    .describedAs("Number of transmission tasks to run in paralell");
+                paralellTransmissionTasks = accepts("p", "Number of paralell transport tasks").withRequiredArg().ofType(Integer.class).defaultsTo(20)
+                    .describedAs("Number of transport tasks to run in paralell");
 
                 help = acceptsAll(asList("h", "?"), "show help").forHelp();
             }

@@ -51,7 +51,7 @@ class TransmissionTaskBuilder {
     }
 
     /**
-     * Builds a single transmission task
+     * Builds a single transport task
      * @return
      */
     List<TransmissionTask> build() {
@@ -59,7 +59,7 @@ class TransmissionTaskBuilder {
     }
 
     /**
-     * Builds number of transmission tasks indicated
+     * Builds number of transport tasks indicated
      * @param instances number of identical tasks to build.
      *
      * @return

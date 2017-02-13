@@ -7,6 +7,7 @@ import no.balder.spiralis.config.SpiralisInboundTestModuleFactory;
 import no.balder.spiralis.jdbc.SpiralisTaskPersister;
 import no.balder.spiralis.payload.AzurePayloadStore;
 import no.balder.spiralis.testutil.DummyFiles;
+import no.balder.spiralis.transport.ReceptionMetaData;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Guice;
@@ -21,6 +22,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -52,7 +54,6 @@ public class ProcessActivityTest {
         assertNotNull(rootPath);
         DummyFiles.removeAll(rootPath);
     }
-
 
     @Test
     public void processSingleTask() throws Exception {
@@ -105,7 +106,29 @@ public class ProcessActivityTest {
         // Verifies the contents of the database ....
         assertNotNull(dataSource);
 
+        assertNotNull(spiralisReceptionTask.getReceptionId());
+
+        final Optional<ReceptionMetaData> byReceptionId = spiralisTaskPersister.findByReceptionId(spiralisReceptionTask.getReceptionId());
+        assertTrue(byReceptionId.isPresent());
+        final ReceptionMetaData rm = byReceptionId.get();
+        assertNotNull(rm.getDirection());
+        assertNotNull(rm.getReceived());
+        assertNull(rm.getDelivered());
+        assertNotNull(rm.getSender());
+        assertNotNull(rm.getReceiver());
+        assertNotNull(rm.getChannel());
+        assertNotNull(rm.getReceptionId());
+        assertNotNull(rm.getTransmissionId());
+        assertNotNull(rm.getInstanceId());
+        assertNotNull(rm.getDocumentTypeId());
+        assertNotNull(rm.getProcessTypeId());
+        assertNotNull(rm.getApName());
+        assertNotNull(rm.getPayloadUrl());
+        assertNotNull(rm.getNativeEvidenceUrl());
+
+
         // Verifies the contents of the Blob store
+        
 
 
     }

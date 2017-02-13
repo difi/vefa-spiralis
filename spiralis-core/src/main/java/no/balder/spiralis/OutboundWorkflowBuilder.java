@@ -6,7 +6,7 @@ import javax.jms.Connection;
 import java.util.List;
 
 /**
- * Builds the default outbound workflow consisting of only the transmission tasks.
+ * Builds the default outbound workflow consisting of only the transport tasks.
  *
  * @author steinar
  *         Date: 04.01.2017

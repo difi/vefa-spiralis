@@ -86,7 +86,7 @@ class ProcessActivity {
                         final URI payloadBlobUri = payloadStore.upload(path, blobName);
                         LOGGER.debug("Uploaded " + payloadBlobUri);
 
-                        // Handles the transmission receipt, if present
+                        // Handles the transport receipt, if present
                         URI smimeBlobUri = null;
                         if (spiralisReceptionTask.getSmimePath() != null) {
                             String smimeBlobName = BlobName.createInboundBlobName(spiralisReceptionTask, spiralisReceptionTask::getSmimePath);
@@ -94,7 +94,7 @@ class ProcessActivity {
                             smimeBlobUri = payloadStore.upload(spiralisReceptionTask.getSmimePath(), smimeBlobName);
                             LOGGER.debug("Uploaded " + smimeBlobUri);
                         } else {
-                            LOGGER.warn("No transmission receipt found for " + spiralisReceptionTask);
+                            LOGGER.warn("No transport receipt found for " + spiralisReceptionTask);
                         }
 
                         // Inserts the metadata into the database

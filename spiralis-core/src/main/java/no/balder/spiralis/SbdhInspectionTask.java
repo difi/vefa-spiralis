@@ -55,7 +55,7 @@ public class SbdhInspectionTask extends AbstractTask {
 
         OutboundTransmissionRequest request = consumerAdapter.receive();
 
-        log.info("Wrapping with SBDH is postponed until transmission for " + request.getMessageId());
+        log.info("Wrapping with SBDH is postponed until transport for " + request.getMessageId());
 
         producerAdapter.send(request);
 

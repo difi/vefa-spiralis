@@ -36,7 +36,7 @@ public class DataSourceModuleTest {
     @Test
     public void testJdbcConfig() throws Exception {
 
-        // Overrides all parameteres in any external .conf-files
+        // Overrides all parameters in any external .conf-files
         final Config config = createOverrideConf();
 
         final Injector i2 = Guice.createInjector(new SpiralisConfigurationModule(config),
@@ -52,6 +52,12 @@ public class DataSourceModuleTest {
             final String url = dataSource.getConnection().getMetaData().getURL();
             assertFalse(url.contains(":mem:"));
         }
+    }
+
+    @Test
+    public void graphGuice() throws Exception {
+        final Injector i2 = Guice.createInjector(new SpiralisConfigurationModule(createOverrideConf()),
+                new DataSourceModule());
 
     }
 
@@ -76,9 +82,9 @@ public class DataSourceModuleTest {
     public void jdbcDataSourceWithDatabaseInMemory() throws Exception {
 
         final Injector injector = Guice.createInjector(new SpiralisConfigurationModule(ConfigFactory.empty()),
-                new DataSourceModule());
+                new InMemoryDataSourceModule());
 
-        final DataSource dsInMemory = injector.getInstance(Key.get(DataSource.class, Names.named("inMemory")));
+        final DataSource dsInMemory = injector.getInstance(DataSource.class);
         assertNotNull(dsInMemory);
         assertEquals(dsInMemory.getConnection().getMetaData().getURL(),"jdbc:h2:mem:test");
     }

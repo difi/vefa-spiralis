@@ -81,7 +81,7 @@ public class WorkflowTest {
         ExecutorService sbhdInspectionExecutor = Executors.newFixedThreadPool(1);
         Future<?> future = sbhdInspectionExecutor.submit(sbdhInspectionTask);
 
-        // Validates and places results into the Outbound.transmission queue
+        // Validates and places results into the Outbound.transport queue
         List<ValidationTask> validatorTasks = taskFactory.createValidatorTasks(1,
                 Place.OUTBOUND_VALIDATION, Place.OUTBOUND_TRANSMISSION, Place.OUTBOUND_INSPECTION_ERROR);
         ExecutorService validationExecutor = Executors.newFixedThreadPool(validatorTasks.size());
@@ -89,7 +89,7 @@ public class WorkflowTest {
             Future<?> validationFuture = validationExecutor.submit(validatorTask);
         }
 
-        // Performs the actual transmission.
+        // Performs the actual transport.
         List<TransmissionTask> transmissionTasks = taskFactory.createTransmissionTasks(10,
                 new URL("http://localhost:8080/oxalis/as2"),
                 Place.OUTBOUND_TRANSMISSION, Place.OUTBOUND_TRANSMISSION_ERROR);

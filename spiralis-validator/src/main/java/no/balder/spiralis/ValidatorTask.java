@@ -88,7 +88,7 @@ public class ValidatorTask implements Runnable {
                 throw new UnsupportedOperationException("No support for processing of messages that fail validation");
             } else {
 
-                log.debug("Validation ok, posting on transmission queue");
+                log.debug("Validation ok, posting on transport queue");
                 // Validation was ok, place on the next queue in our pipeline.
                 messageProducer.send(receivedMessage);
             }

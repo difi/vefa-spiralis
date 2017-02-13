@@ -1,6 +1,8 @@
 package no.balder.spiralis.jdbc;
 
 import no.balder.spiralis.inbound.SpiralisReceptionTask;
+import no.balder.spiralis.transport.ReceptionId;
+import no.balder.spiralis.transport.ReceptionMetaData;
 
 import java.net.URI;
 import java.util.Optional;
@@ -13,4 +15,6 @@ import java.util.Optional;
 public interface SpiralisTaskPersister {
 
     Long saveInboundTask(SpiralisReceptionTask spiralisReceptionTask, URI payloadBlobUri, Optional<URI> smimeBlobUri);
+
+    Optional<ReceptionMetaData> findByReceptionId(ReceptionId receptionId);
 }

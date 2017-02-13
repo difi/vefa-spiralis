@@ -31,7 +31,6 @@ public class DataSourceModule extends AbstractModule{
     protected void configure() {
 
         bind(DataSourceFactoryDbcp.class).to(DataSourceFactoryDbcpImpl.class);
-        bind(SpiralisTaskPersister.class).to(SpiralisTaskPersisterImpl.class);
     }
 
 
@@ -41,32 +40,4 @@ public class DataSourceModule extends AbstractModule{
         LOGGER.warn("If you see this message more than once in production, data source is not being loaded in singleton");
         return dataSourceFactoryDbcp.getDataSource();
     }
-
-    @Provides
-    @Named("inMemory")
-    @Singleton                                                                      
-    DataSource provideDataSourceInMemory() {
-        JdbcDataSource ds = createH2DataSource();
-        createDatabaseSchema(ds);
-        return ds;
-    }
-
-    private JdbcDataSource createH2DataSource() {
-        JdbcDataSource ds = new JdbcDataSource();
-        ds.setUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
-        ds.setUser("sa");
-        ds.setPassword("");
-        return ds;
-    }
-
-    private static void createDatabaseSchema(DataSource ds) {
-        try (InputStream resourceAsStream = DataSourceModule.class.getClassLoader().getResourceAsStream(CREATE_RINGO_DBMS_H2_SQL);){
-            RunScript.execute(ds.getConnection(), new InputStreamReader(resourceAsStream, Charset.forName("UTF-8")));
-        } catch (SQLException e) {
-            throw new IllegalStateException("Unable to obtain connection from datasource. " + e.getMessage(), e);
-        } catch (IOException e) {
-            throw new IllegalStateException("Unable to load SQL script from " + CREATE_RINGO_DBMS_H2_SQL + " : " + e.getMessage(), e);
-        }
-    }
-
 }
