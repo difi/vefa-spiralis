@@ -1,20 +1,14 @@
 package no.balder.spiralis.jdbc;
 
-import com.google.inject.Binding;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.name.Named;
-import com.google.inject.name.Names;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import no.balder.spiralis.config.InjectorHelper;
 import no.balder.spiralis.config.SpiralisConfigProperty;
 import no.balder.spiralis.config.SpiralisConfigurationModule;
 import org.testng.annotations.Test;
 
 import javax.sql.DataSource;
-
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 

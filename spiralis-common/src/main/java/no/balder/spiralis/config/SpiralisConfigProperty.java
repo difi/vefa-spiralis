@@ -12,11 +12,16 @@ import java.util.List;
  */
 public final class SpiralisConfigProperty {
 
-    public static final String SPIRALIS_HOME    = "spiralis.home";
-    public static final String SPRIALIS_INBOUND = "spiralis.inbound.directory";
-    public static final String SPIRALIS_AZURE_ACCOUNT = "spiralis.azure.account";
-    public static final String SPIRALIS_AZURE_KEY = "spiralis.azure.access-key";
-    public static final String SPIRALIS_AZURE_CONNECT = "spiralis.azure.connect";
+    public static final String SPIRALIS_HOME            = "spiralis.home";
+    public static final String SPIRALIS_INBOUND_DIR = "spiralis.inbound.directory";
+    public static final String SPIRALIS_AZURE_ACCOUNT   = "spiralis.azure.account";
+    public static final String SPIRALIS_AZURE_KEY       = "spiralis.azure.access-key";
+    public static final String SPIRALIS_AZURE_CONNECT   = "spiralis.azure.connect";
+    public static final String SPIRALIS_ARCHIVE_DIR     = "spirlias.archive.dir";
+    /**
+     * The glob pattern to match inbound files against.
+     */
+    public static final String SPIRALIS_INBOUND_GLOB = "spiralis.inbound.glob";
 
     private SpiralisConfigProperty() {
     }

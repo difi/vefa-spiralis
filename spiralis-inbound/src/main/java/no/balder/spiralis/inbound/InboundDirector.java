@@ -6,6 +6,7 @@ import no.balder.spiralis.payload.PayloadStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.*;
 
@@ -52,10 +53,28 @@ public class InboundDirector {
      * @param payloadStore the {@link PayloadStore} instance to be used in the final {@link ProcessActivity}
      */
     @Inject
-    InboundDirector(Path inboundDirPath, Path archiveDirPath, String fileMatchGlob, PayloadStore payloadStore, SpiralisTaskPersister spiralisTaskPersister) {
+    public InboundDirector(Path inboundDirPath, Path archiveDirPath, String fileMatchGlob, PayloadStore payloadStore, SpiralisTaskPersister spiralisTaskPersister) {
         this.inboundDirPath = inboundDirPath;
+        if (!Files.exists(inboundDirPath)) {
+            throw new IllegalStateException("Inbound directory to scan, " + inboundDirPath + " does not exist");
+        }
+
+
         this.archiveDirPath = archiveDirPath;
-        this.fileMatchGlob = fileMatchGlob;
+        if (!Files.exists(archiveDirPath)) {
+            throw new IllegalStateException("Archive directory " + archiveDirPath + " does not exist");
+        }
+
+
+        if (!fileMatchGlob.startsWith("glob:")){
+            this.fileMatchGlob = "glob:" + fileMatchGlob;
+        } else {
+            this.fileMatchGlob = fileMatchGlob;
+        }
+        if (!fileMatchGlob.contains("**")){
+            LOGGER.warn("Filematching 'glob' should contain two consecutive stars in order to match across directory boundaries; i.e 'glob:**-doc.xml'");
+        }
+        
         this.payloadStore = payloadStore;
         this.spiralisTaskPersister = spiralisTaskPersister;
         scannedTasksQueue = new LinkedBlockingDeque<>();

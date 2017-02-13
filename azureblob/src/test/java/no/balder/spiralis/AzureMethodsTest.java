@@ -263,7 +263,7 @@ public class AzureMethodsTest {
     }
 
 
-    @Test
+    @Test(enabled = false)
     public void testListContents() throws Exception {
         try {
             CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);

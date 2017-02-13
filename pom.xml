@@ -8,7 +8,9 @@
     <modules>
         <module>spiralis-api</module>
         <module>spiralis-validator</module>
+<!--
         <module>spiralis-core</module>
+-->
         <module>oxalis-plugin</module>
         <module>azureblob</module>
         <module>spiralis-inbound</module>

@@ -4,6 +4,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.typesafe.config.Config;
 import no.balder.spiralis.jdbc.DataSourceModule;
+import no.balder.spiralis.jdbc.RepositoryModule;
 
 import static com.google.inject.Guice.createInjector;
 
@@ -19,8 +20,9 @@ public class InjectorHelper {
 
         return Guice.createInjector(
                 new SpiralisConfigurationModule(config),
-                new DataSourceModule()
+                new DataSourceModule(),
+                new RepositoryModule(),
+                new InboundModule()
         );
-
     }
 }

@@ -31,6 +31,8 @@ public class SpiralisHomeDirectory {
 
         validate(homeDir);
 
+        System.setProperty(SPIRALIS_HOME, homeDir.toString());
+
         return homeDir;
 
     }

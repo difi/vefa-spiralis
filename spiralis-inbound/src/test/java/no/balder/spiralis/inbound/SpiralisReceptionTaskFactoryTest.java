@@ -65,14 +65,14 @@ public class SpiralisReceptionTaskFactoryTest {
     @Test
     public void testBaseFileName() throws Exception {
 
-        // Obtains a url to our sample payload xml file
-        final URL url = DummyFiles.samplePayloadUrl();
-        final Path path = Paths.get(url.toURI());
+        final Path inboundDummyFilesInRootWithSubdirs = DummyFiles.createInboundDummyFilesInRootWithSubdirs();
+        final List<Path> paths = DummyFiles.locatePayloadFilesIn(inboundDummyFilesInRootWithSubdirs);
+
+        final Path path = paths.get(0);
 
         // Extracts the base name, i.e. the filename without the extension
         // Extracts the UUID part of the filename, i.e. the suffix is discarded
         final String s = PayloadPathUtil.fileNameBodyPart(path);
         assertEquals(s, DummyFiles.SAMPLE_UUID);
     }
-
 }

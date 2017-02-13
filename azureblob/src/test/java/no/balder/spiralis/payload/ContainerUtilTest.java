@@ -19,8 +19,8 @@ public class ContainerUtilTest {
     public void testFileNameExtraction() throws Exception {
 
         final Path path = Paths.get("/var/peppol/IN/" + "134f84fc-50b9-41d9-a77f-854518bbbccf-doc.xml");
-        final String s = ContainerUtil.getFileNameOnly(path);
-        assertEquals(s, "134f84fc-50b9-41d9-a77f-854518bbbccf-doc.xml");
+        final String s = ContainerUtil.getBaseFileNameOnly(path);
+        assertEquals(s, "134f84fc-50b9-41d9-a77f-854518bbbccf");
     }
 
 

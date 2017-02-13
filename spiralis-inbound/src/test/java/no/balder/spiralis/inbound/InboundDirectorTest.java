@@ -33,8 +33,8 @@ public class InboundDirectorTest {
     @Inject
     SpiralisTaskPersister spiralisTaskPersister;
 
-    @Test
-    public void testStart() throws Exception {
+    @Test(enabled = false)
+    public void hafslundTest() throws Exception {
 
         // final Path inboundDummyFiles = DummyFiles.createInboundDummyFilesInRootWithSubdirs();
         final Path inboundDirPath = Paths.get("/var/peppol/IN");

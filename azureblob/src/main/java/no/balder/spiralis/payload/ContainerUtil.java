@@ -35,7 +35,7 @@ class ContainerUtil {
         MessageDigest sha1 = null;
         try {
             sha1 = MessageDigest.getInstance("SHA-1");  // Not thread safe
-            String filenameOnly = getFileNameOnly(path); // Rip of extension and any prefixes
+            String filenameOnly = getBaseFileNameOnly(path); // Rip of extension and any prefixes
 
 
             final byte[] digest = sha1.digest(filenameOnly.getBytes());
@@ -50,7 +50,12 @@ class ContainerUtil {
         }
     }
 
-    static String getFileNameOnly(Path path) {
+    /**
+     *
+     * @param path
+     * @return
+     */
+    static String getBaseFileNameOnly(Path path) {
         // Extracts the filename part
         final Path fileName = path.getFileName();
 

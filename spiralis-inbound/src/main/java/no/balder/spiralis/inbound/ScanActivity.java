@@ -30,6 +30,8 @@ class ScanActivity {
         this.dirPath = dirPath;
         this.fileMatchGlob = fileMatchGlob;
         this.scannedTasksQueue = scannedTasksQueue;
+
+        LOGGER.info("Scanning for files matching ==> " + fileMatchGlob);
     }
 
     public ExecutorService getExecutorService() {

@@ -1,10 +1,13 @@
 package no.balder.spiralis.payload;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import no.balder.spiralis.config.SpiralisConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +30,8 @@ public class AzurePayloadStore implements PayloadStore {
 
     private final CloudBlobClient blobClient;
 
-    public AzurePayloadStore(String connectionString) {
+    @Inject
+    public AzurePayloadStore(@Named(SpiralisConfigProperty.SPIRALIS_AZURE_CONNECT) String connectionString) {
         // Retrieve storage account from connection-string.
         CloudStorageAccount storageAccount = null;
         try {
@@ -36,6 +40,8 @@ public class AzurePayloadStore implements PayloadStore {
             throw new IllegalStateException("Unable to connecto to Azure " + e.getMessage(), e);
         } catch (InvalidKeyException e) {
             throw new IllegalStateException("Invalid connection key: " + connectionString);
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to connect with '" + connectionString + "', reason:" + e.getMessage(), e);
         }
 
         // Create the payload client.

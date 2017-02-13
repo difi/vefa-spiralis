@@ -20,13 +20,16 @@ public class CommandLineParser {
 
     private final OptionParser optionParser;
     private final OptionSpec<String> directoryOption;
+    private final OptionSpec<String> archiveDirectory;
+    private final OptionSpec<String> glob;
     private OptionSet optionSet;
 
     public CommandLineParser() {
 
         optionParser = new OptionParser();
         directoryOption = optionParser.accepts("directory", "Directory to scan for input").withRequiredArg().describedAs("directory").required();
-
+        archiveDirectory = optionParser.accepts("archive", "Archive directory").withRequiredArg().describedAs("directory").required();
+        glob = optionParser.accepts("glob", "File matching glob: **-doc.xml").withRequiredArg().describedAs("file matching glob");
     }
 
     /**
@@ -59,12 +62,6 @@ public class CommandLineParser {
     }
 
 
-    String getDirectory(){
-        checkParsedState();
-
-        return directoryOption.value(optionSet);
-    }
-
     private void checkParsedState() {
         if (optionSet == null) {
             throw new IllegalStateException("Must parse arguments first");
@@ -78,7 +75,13 @@ public class CommandLineParser {
     public Config getConfig() {
         Map<String, String> m = new HashMap<>();
 
-        m.put("spiralis.inbound.directory", getDirectory());
+        checkParsedState();
+        if (optionSet.has(directoryOption))
+            m.put(SpiralisConfigProperty.SPIRALIS_INBOUND_DIR, directoryOption.value(optionSet));
+        if (optionSet.has(archiveDirectory))
+            m.put(SpiralisConfigProperty.SPIRALIS_ARCHIVE_DIR, archiveDirectory.value(optionSet));
+        if (optionSet.has(glob))
+            m.put(SpiralisConfigProperty.SPIRALIS_INBOUND_GLOB, glob.value(optionSet));
 
         Config config = ConfigFactory.parseMap(m, "Command line options");
         

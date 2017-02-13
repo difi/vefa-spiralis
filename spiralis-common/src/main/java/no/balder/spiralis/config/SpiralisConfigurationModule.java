@@ -1,18 +1,12 @@
 package no.balder.spiralis.config;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
+import com.google.inject.name.Names;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Named;
-import javax.inject.Singleton;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import static no.balder.spiralis.config.SpiralisConfigProperty.SPIRALIS_HOME;
 /**
  * @author steinar
  *         Date: 03.02.2017
@@ -24,58 +18,41 @@ public class SpiralisConfigurationModule extends AbstractModule {
 
     private final Config commandLineConfig;
 
-
+    /**
+     * Loads a complete, merged set of Config objects. If you do not have a Config object obtained by
+     * parsing the command line, you may use {@link ConfigFactory#empty()}
+     *
+     * @param commandLineConfig required argument
+     */
     public SpiralisConfigurationModule(Config commandLineConfig) {
+        if (commandLineConfig == null) {
+            throw new IllegalArgumentException("Command line configuration object required, you may use ConfigFactory.empty()");
+        }
         this.commandLineConfig = commandLineConfig;
     }
 
     @Override
     protected void configure() {
 
+        final Config config = loadAndbindConfigNames();
+
+        bind(Config.class).toInstance(config);
     }
 
-    @Provides
-    @Singleton
-    @Named(SPIRALIS_HOME)
-    protected Path spiralisHomeFolder() {
-        Path path = SpiralisHomeDirectory.locateSpiralisHomeDir();
-        return path;
-    }
 
-    /**
-     * Loads the external configuration file, i.e. the {@code $SPIRALIS_HOME/spiralis.conf}
-     *
-     * @param spiralisHome full path to the external config file
-     * @return a typesafe config object
-     */
-    @Provides
-    @Singleton
-    @Named("external.config")
-    protected Config loadExternalConfigFile(@Named(SPIRALIS_HOME) Path spiralisHome) {
+    private Config loadAndbindConfigNames() {
+        Config mergedConfig = ConfigLoader.instanceWithCommandLineConfigParams(commandLineConfig);
 
-        Path configPath = spiralisHome.resolve("spiralis.conf");
-        LOGGER.info("External configuration file: " + configPath);
-        if (!Files.exists(spiralisHome)) {
-            LOGGER.warn(configPath + " does not exist");
+        for (String propertyName : SpiralisConfigProperty.getPropertyNames()) {
+            if (mergedConfig.hasPath(propertyName)) {
+                final String value = mergedConfig.getString(propertyName);
+                LOGGER.debug("Binding {} to value \"{}\"", propertyName, value);
+                bind(String.class).annotatedWith(Names.named(propertyName)).toInstance(value);
+            }
         }
-        Config config = ConfigFactory.parseFile(configPath.toFile());
-        return config;
+
+        return mergedConfig;
     }
 
-    
-    @Provides
-    @Singleton
-    protected Config loadAndMergeConfiguration(@Named("external.config") Config externalConfig) {
-        Config defaultReferenceConfig = ConfigFactory.defaultReference();   // Loads the reference.conf from class path
 
-        // Loads and merges configuration in priority order
-        Config effectiveMergedconfig = ConfigFactory.systemProperties()     // System properties overrides everything
-                .withFallback(commandLineConfig)
-                .withFallback(externalConfig)                               // The external configuration file
-                .withFallback(defaultReferenceConfig)                       // The reference.conf files on class path
-                .withFallback((defaultReferenceConfig.getConfig("default")));   // Finally, set default fall back values
-
-        final Config resolved = effectiveMergedconfig.resolve();    // Resolves and substitutes any variables
-        return resolved;
-    }
 }

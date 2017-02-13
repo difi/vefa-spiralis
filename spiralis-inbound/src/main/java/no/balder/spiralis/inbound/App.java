@@ -1,10 +1,9 @@
-package no.balder.spiralis;
+package no.balder.spiralis.inbound;
 
 import com.google.inject.Injector;
 import com.typesafe.config.Config;
 import no.balder.spiralis.config.CommandLineParser;
 import no.balder.spiralis.config.InjectorHelper;
-import no.balder.spiralis.inbound.InboundDirector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

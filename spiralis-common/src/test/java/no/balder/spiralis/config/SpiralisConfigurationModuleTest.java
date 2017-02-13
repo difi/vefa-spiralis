@@ -47,7 +47,7 @@ public class SpiralisConfigurationModuleTest {
 
         Files.write(configPath, Arrays.asList(lines), Charset.defaultCharset());
 
-        Files.write(directory.resolve("jdbc.conf"), "spiralis { jdbc.driver: foo}".getBytes());
+        Files.write(directory.resolve("jdbc.conf"), "spiralis {\njdbc.driver: foo \n}\n".getBytes());
     }
 
     @BeforeMethod
@@ -59,6 +59,8 @@ public class SpiralisConfigurationModuleTest {
         Config dummyCommandLineParamsConfig = ConfigFactory.load("dummy");
 
         createSampleConfigFile(Paths.get(tmpDirName), "spiralis.conf");
+        assertEquals(System.getProperty(SPIRALIS_HOME), System.getProperty("java.io.tmpdir"));
+
         SpiralisConfigurationModule spiralisConfigurationModule = new SpiralisConfigurationModule(dummyCommandLineParamsConfig);
         Injector injector = Guice.createInjector(spiralisConfigurationModule);
         injector.injectMembers(this);
@@ -73,9 +75,12 @@ public class SpiralisConfigurationModuleTest {
     @Test
     public void testSpiralisHomeFolder() throws Exception {
 
-        Path path = injector.getInstance(Key.get(Path.class, Names.named(SPIRALIS_HOME)));
+        assertEquals(Paths.get(System.getProperty(SPIRALIS_HOME)), Paths.get(System.getProperty("java.io.tmpdir")));
+        
+        Path path = Paths.get(injector.getInstance(Key.get(String.class, Names.named(SPIRALIS_HOME))));
         assertNotNull(path);
-        assertEquals(path, Paths.get(System.getProperty("java.io.tmpdir")));
+        final Path tmpdir = Paths.get(System.getProperty("java.io.tmpdir"));
+        assertEquals(path, tmpdir,"Obtained " + path + " as spiralis.home from Config, expected " + tmpdir);
 
     }
 
@@ -84,19 +89,8 @@ public class SpiralisConfigurationModuleTest {
 
         final Config config = injector.getInstance(Config.class);
         assertTrue(config.hasPath("spiralis.foo"));
-
-
     }
 
-    /**
-     * Verifies that we have access to the Config named "external.config"
-     * @throws Exception
-     */
-    @Test
-    public void testLoadExternalConfigFile() throws Exception {
-        Config instance = injector.getInstance(Key.get(Config.class, Names.named("external.config")));
-        assertNotNull(instance);
-    }
 
     /**
      * Complete configuration in prioritized order should have been loaded.

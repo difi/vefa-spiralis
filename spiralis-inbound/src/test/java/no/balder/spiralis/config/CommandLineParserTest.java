@@ -33,7 +33,7 @@ public class CommandLineParserTest {
     @Test
     public void testParse() throws Exception {
 
-        OptionSet options = commandLineParser.parse(new String[]{"-d", "/tmp"});
+        OptionSet options = commandLineParser.parse(new String[]{"-d", "/tmp", "-archive","/tmp/archive"});
 
         assertTrue(options.has("directory"));
         assertTrue(options.hasArgument("directory"));
@@ -53,11 +53,11 @@ public class CommandLineParserTest {
 
     @Test
     public void getConfig() throws Exception {
-        OptionSet options = commandLineParser.parse(new String[]{"-d", "/tmp"});
+        OptionSet options = commandLineParser.parse(new String[]{"-d", "/tmp/in", "-a", "/tmp/archive"});
 
         Config config = commandLineParser.getConfig();
         assertNotNull(config);
         assertTrue(config.hasPath("spiralis.inbound.directory"));
-        assertEquals(config.getString("spiralis.inbound.directory"), "/tmp");
+        assertEquals(config.getString("spiralis.inbound.directory"), "/tmp/in");
     }
 }
