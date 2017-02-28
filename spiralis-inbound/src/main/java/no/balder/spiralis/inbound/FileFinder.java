@@ -46,6 +46,7 @@ class FileFinder extends SimpleFileVisitor<Path> {
             if (!queue.contains(file)) {
                 try {
                     queue.put(file);
+                    LOGGER.debug("Added " + file.toString() + " to the queue");
                 } catch (InterruptedException e) {
                     throw new IllegalStateException("Unable to place " + file + " on queue",e);
                 }

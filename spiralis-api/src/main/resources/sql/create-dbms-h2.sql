@@ -79,10 +79,9 @@ CREATE TABLE `message` (
   `instance_id` varchar(64) comment 'Instance identifier from SBDH',
   `document_id` varchar(256) NOT NULL COMMENT 'document type id',
   `process_id` varchar(128) DEFAULT NULL COMMENT 'Process type id',
-  `remote_host` varchar(128) DEFAULT NULL COMMENT 'Senders AS2-From header',
   `ap_name` varchar(128) DEFAULT NULL comment 'CN of certificate of sending access point' ,
   `payload_url` varchar(256) not null comment 'The URL of the message payload, the xml document',
-  `native_evidence_url` varchar(256) default null comment 'URL of the native receipt i.e. AS2 MDN',
+  `evidence_url` varchar(256) default null comment 'URL of the native receipt i.e. AS2 MDN',
   PRIMARY KEY (`msg_no`),
   /* A message sent and received at the same access point, will have two entries having different transfer direction */
   constraint unique_message_uuid UNIQUE (direction, `message_uuid`),
@@ -121,7 +120,7 @@ create user skrue PASSWORD 'vable';
 grant all on outbound_message_queue_error, outbound_message_queue, message,
   account_receiver, account_role, account,customer to skrue;
 
-insert into customer (id, name, external_ref, org_no) values (1, 'SendRegning AS', 279, '976098897');
+insert into customer (id, name, external_ref, org_no) values (1, 'SendRegning AS', 279, '9908:976098897');
 
 /* Salted password is "ringo1" in cleartext. Salted and hashed password was created with $TOMCAT_HOME/bin/digest.sh  */
 insert into account (id, customer_id, name, username, password) values (1, 1, 'SendRegning User', 'sr', 'd0fc73ba7d0e6becc0fbd49c65493b6eb99912ba119a9637117ac7f636475d7e$20000$988a1f4e8c2162a4fc31814e2b3ba89f849e069d');

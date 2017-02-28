@@ -4,9 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import com.microsoft.azure.storage.blob.*;
 import no.balder.spiralis.config.SpiralisConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.time.OffsetDateTime;
+import java.util.*;
 
 /**
  * @author steinar
@@ -37,7 +36,7 @@ public class AzurePayloadStore implements PayloadStore {
         try {
             storageAccount = CloudStorageAccount.parse(connectionString);
         } catch (URISyntaxException e) {
-            throw new IllegalStateException("Unable to connecto to Azure " + e.getMessage(), e);
+            throw new IllegalStateException("Unable to connect to to Azure " + e.getMessage(), e);
         } catch (InvalidKeyException e) {
             throw new IllegalStateException("Invalid connection key: " + connectionString);
         } catch (Exception e) {
@@ -61,13 +60,51 @@ public class AzurePayloadStore implements PayloadStore {
         }
     }
 
+    @Override
+    public URI createUriWithAccessToken(URI uriOfBlob) {
+        if (uriOfBlob == null) {
+            throw new IllegalArgumentException("Required argument 'uriOfBlob' is null");
+        }
+        String blobUri =null ;
+        try {
+            final CloudBlockBlob blob = new CloudBlockBlob(uriOfBlob, blobClient.getCredentials());
+            // Generates the shared access policy which will be used in the next step.
+            SharedAccessBlobPolicy sharedAccessPolicy = createSharedAccessPolicy(EnumSet.of(SharedAccessBlobPermissions.READ), 300);
+
+            // Generates the SAS token.
+            final String sas2 = blob.generateSharedAccessSignature(sharedAccessPolicy, null);
+
+            // Creates the complete second URI with SAS token
+            blobUri = blob.getUri().toString() + "?" + sas2;
+            return new URI(blobUri);
+        } catch (StorageException e) {
+            throw new IllegalArgumentException("Unable to create block blob reference for " + uriOfBlob, e);
+        } catch (InvalidKeyException e) {
+            throw new IllegalStateException("Unable to create SAS key for " + uriOfBlob, e);
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("Unable to create new URI from " + blobUri + ";" + e.getMessage(), e);
+        }
+    }
+
+    private final static SharedAccessBlobPolicy createSharedAccessPolicy(EnumSet<SharedAccessBlobPermissions> sap,
+                                                                         int expireTimeInSeconds) {
+
+        Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        cal.setTime(new Date());
+        cal.add(Calendar.SECOND, expireTimeInSeconds);
+        SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
+        policy.setPermissions(sap);
+        policy.setSharedAccessExpiryTime(cal.getTime());
+        return policy;
+
+    }
+
     private CloudBlobContainer containerReferenceFor(Path payload) {
 
         final String containerName = ContainerUtil.containerNameFor(payload);
         try {
-            // TODO: consider caching this
             final CloudBlobContainer containerReference = blobClient.getContainerReference(containerName);
-            containerReference.createIfNotExists();
+            containerReference.createIfNotExists(); // TODO: consider caching this
             return containerReference;
 
         } catch (URISyntaxException | StorageException e) {

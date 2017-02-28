@@ -74,7 +74,9 @@ public class InboundDirector {
         if (!fileMatchGlob.contains("**")){
             LOGGER.warn("Filematching 'glob' should contain two consecutive stars in order to match across directory boundaries; i.e 'glob:**-doc.xml'");
         }
-        
+
+        LOGGER.info("Processing files matching " + fileMatchGlob);
+
         this.payloadStore = payloadStore;
         this.spiralisTaskPersister = spiralisTaskPersister;
         scannedTasksQueue = new LinkedBlockingDeque<>();

@@ -11,4 +11,6 @@ import java.time.OffsetDateTime;
  */
 public interface PayloadStore {
     URI upload(Path payload, String name);
+
+    URI createUriWithAccessToken(URI uriOfBlob);
 }

@@ -30,7 +30,7 @@ public class SpiralisReceptionTaskPersisterImplTest {
 
     @BeforeMethod
     public void setUp() throws Exception {
-        rootPath = DummyFiles.createInboundDummyFilesInRootWithSubdirs();
+        rootPath = DummyFiles.createInboundDummyFilesInRootWithOptionalSubdirs();
     }
 
     @AfterMethod
@@ -42,14 +42,14 @@ public class SpiralisReceptionTaskPersisterImplTest {
     public void testPersistTask() throws Exception {
 
         // Traverses the dummy files ..
-        final List<Path> paths = DummyFiles.locatePayloadFilesIn(rootPath);
+        final List<Path> paths = DummyFiles.locateJsonMetaData(rootPath);
 
         // Creates the SpiralisReceptionTask based upon the contents in the sample dummy files
         final SpiralisReceptionTask spiralisReceptionTask = SpiralisTaskFactory.insepctInbound(paths.get(0));
 
 
         spiralisTaskPersister.saveInboundTask(spiralisReceptionTask, new URI("azure", "microsoft", "/inbound/test", null),
-                Optional.ofNullable(new URI("azure", "microsoft", "/inbound/test/x.smime", null)));
+                (new URI("azure", "microsoft", "/inbound/test/x.smime", null)));
     }
 
 

@@ -23,7 +23,7 @@ public class RenamePayloadTest {
     @Test
     public void testRename() throws Exception {
 
-        final Path inboundDummyFiles = DummyFiles.createInboundDummyFilesInRootWithSubdirs();
+        final Path inboundDummyFiles = DummyFiles.createInboundDummyFilesInRootWithOptionalSubdirs();
         final PayloadRenamer visitor = new PayloadRenamer();
         Files.walkFileTree(Paths.get("/var","peppol","IN"), visitor);
         final Map<String, List<Path>> pathsByBaseName = visitor.getPathsByBaseName();
@@ -57,7 +57,7 @@ public class RenamePayloadTest {
         @Override
         public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
             if (pathMatcher.matches(path)) {
-                final String fileNameBody = PayloadPathUtil.fileNameBodyPart(path);
+                final String fileNameBody = ReceptionPathUtil.fileNameBodyPart(path);
                 addToMap(fileNameBody, path);
             } else
                 LOGGER.debug("Skipping " + path);

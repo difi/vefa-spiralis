@@ -5,6 +5,7 @@ import com.typesafe.config.ConfigFactory;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
+import no.balder.spiralis.payload.WellKnownFileTypeSuffix;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,7 +30,8 @@ public class CommandLineParser {
         optionParser = new OptionParser();
         directoryOption = optionParser.accepts("directory", "Directory to scan for input").withRequiredArg().describedAs("directory").required();
         archiveDirectory = optionParser.accepts("archive", "Archive directory").withRequiredArg().describedAs("directory").required();
-        glob = optionParser.accepts("glob", "File matching glob: **-doc.xml").withRequiredArg().describedAs("file matching glob");
+        glob = optionParser.accepts("glob", "File matching glob: '**.meta.json'").withRequiredArg().describedAs("file matching glob")
+                .defaultsTo(WellKnownFileTypeSuffix.META_JSON.glob());
     }
 
     /**

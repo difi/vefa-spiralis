@@ -1,0 +1,89 @@
+Message-ID: <10732128.3.1488017265004.JavaMail.steinar@macsteinar3.local>
+MIME-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-1; 
+	boundary="----=_Part_2_1861723968.1488017265003"
+AS2-Version: 1.0
+AS2-From: APP_1000000135
+AS2-To: APP_1000000135
+
+------=_Part_2_1861723968.1488017265003
+Content-Type: multipart/report; Report-Type=disposition-notification; 
+	boundary="----=_Part_0_1702580034.1488017264776"
+
+------=_Part_0_1702580034.1488017264776
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+= Received headers
+
+date: Sat, 25 Feb 2017 11:07:43 +0100
+message-id: <519962243.2.1488017263621.JavaMail.steinar@macsteinar3.local>
+subject: AS2 message from OXALIS
+mime-version: 1.0
+content-type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-1; boundary="----=_Part_1_307162568.1488017263616"
+as2-from: APP_1000000135
+as2-to: APP_1000000135
+disposition-notification-to: not.in.use@difi.no
+disposition-notification-options: signed-receipt-protocol=required,pkcs7-signature; signed-receipt-micalg=required,sha1
+as2-version: 1.0
+host: localhost:8080
+connection: Keep-Alive
+user-agent: Oxalis 4.0.0-RC2-SNAPSHOT
+accept-encoding: gzip,deflate
+content-length: 90463
+
+
+------=_Part_0_1702580034.1488017264776
+Content-Type: message/disposition-notification
+Content-Transfer-Encoding: 7bit
+
+Date: Sat, 25 Feb 2017 11:07:43 +0100
+Reporting-UA: Oxalis 4.0.0-RC2-SNAPSHOT
+Original-Recipient: rfc822; APP_1000000135
+Final-Recipient: rfc822; APP_1000000135
+Original-Message-ID: <519962243.2.1488017263621.JavaMail.steinar@macsteinar3.local>
+X-Oxalis-Original-Content-Header: Q29udGVudC1UeXBlOiBhcHBsaWNhdGlvbi94bWwNCkNvbnRlbnQtVHJhbnNmZXItRW5jb2Rpbmc6IGJpbmFyeQ0KDQo=
+Received-Content-Mic: NvQ2cebms1PyERYF9JVZfe5KAgY=, sha1
+Disposition: automatic-action/MDN-sent-automatically; processed
+
+------=_Part_0_1702580034.1488017264776--
+
+------=_Part_2_1861723968.1488017265003
+Content-Type: application/pkcs7-signature; name=smime.p7s; smime-type=signed-data
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Description: S/MIME Cryptographic Signature
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIAwggR5MIID
+YaADAgECAhAGgtZ0MD0xcfM56wpRrAlYMA0GCSqGSIb3DQEBCwUAMH0xCzAJBgNVBAYTAkRLMScw
+JQYDVQQKEx5OQVRJT05BTCBJVCBBTkQgVEVMRUNPTSBBR0VOQ1kxHzAdBgNVBAsTFkZPUiBURVNU
+IFBVUlBPU0VTIE9OTFkxJDAiBgNVBAMTG1BFUFBPTCBBQ0NFU1MgUE9JTlQgVEVTVCBDQTAeFw0x
+NTEwMDYwMDAwMDBaFw0xNzEwMDUyMzU5NTlaMEsxCzAJBgNVBAYTAk5PMSMwIQYDVQQKDBpESUZJ
+IChPeGFsaXMgcmVuZXdhbCB0ZXN0KTEXMBUGA1UEAwwOQVBQXzEwMDAwMDAxMzUwggEiMA0GCSqG
+SIb3DQEBAQUAA4IBDwAwggEKAoIBAQDQ1TnJfiLhnAnPAiJWuxXg8kmN3yPZu+wX24oWhBWmjH/m
+aluz2tUBMbQnbqCWCmoRdUvpIuvFntZBTWNCpEvWIijRKWakNi0MjzqrPpXhiMJxqorvR1WsvuJj
+2MEIDD0W+P8fWWvGUW+zSdHYNMbFhvACS+aU6nXOFQ5ZFvQS1nTdHtrAmMCGJ0fjeYOcsLa6IYRH
+yV421Vz0CB+bPVyLwZ1KYwK/KJwz2e79zPwxi35Y4wMJOQxd5T0VpFVuoo661bGeTw5KxAfnpg/L
+BnG8KB5teQrGhiQ5JUm4rh3B7wMgyKRcbX/4Wdqm3Hgw/gSjxgqic5kQOW9mPKRBlLftAgMBAAGj
+ggElMIIBITAJBgNVHRMEAjAAMAsGA1UdDwQEAwIDuDB2BgNVHR8EbzBtMGugaaBnhmVodHRwOi8v
+cGlsb3RvbnNpdGVjcmwudmVyaXNpZ24uY29tL0RpZ2l0YWxpc2VyaW5nc3N0eXJlbHNlblBpbG90
+T3BlblBFUFBPTEFDQ0VTU1BPSU5UQ0EvTGF0ZXN0Q1JMLmNybDAfBgNVHSMEGDAWgBT3losZTK7i
+ViEAvob9ekesncoFdTAdBgNVHQ4EFgQUVgFFWvRzbbG22NkF7aYZgg5kqxEwOgYIKwYBBQUHAQEE
+LjAsMCoGCCsGAQUFBzABhh5odHRwOi8vcGlsb3Qtb2NzcC52ZXJpc2lnbi5jb20wEwYDVR0lBAww
+CgYIKwYBBQUHAwIwDQYJKoZIhvcNAQELBQADggEBAAeK9omZFA6dIRSNsPAJkOWoPcgH7x/reAqC
+F7ApPuzKilF77ecbDmNFrHRFj3XnZU0CMFc8PbXxZtzpDHFMUE/cqqJpTO8h1OOQ54ZH/Iaq8joB
+g033ZczLTNNakZ8PJSFQQ7Gz2eu+I6Fvf8aHMF+SxFvmHZt8SKT93dhYazpsJGiC+7EF819C5b/E
+ZJFsPqLyV+Dz0w/OlVvFRyElSzSXEMQftEjbaosibTD10QlNQDcwy1BnykGtCuZTCvkPAJpRbKqC
+3/fyXeqW/0L/YB4G6JJGj2ZJwv7SWZoTOfZsm1/lMQrr1KnDqr/+RC8FCqVTa2OmEtlhVcegiDRA
+g4AAADGCAkQwggJAAgEBMIGRMH0xCzAJBgNVBAYTAkRLMScwJQYDVQQKEx5OQVRJT05BTCBJVCBB
+TkQgVEVMRUNPTSBBR0VOQ1kxHzAdBgNVBAsTFkZPUiBURVNUIFBVUlBPU0VTIE9OTFkxJDAiBgNV
+BAMTG1BFUFBPTCBBQ0NFU1MgUE9JTlQgVEVTVCBDQQIQBoLWdDA9MXHzOesKUawJWDAJBgUrDgMC
+GgUAoIGIMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE3MDIyNTEw
+MDc0NVowIwYJKoZIhvcNAQkEMRYEFO9b+sBSWmiv+2Auj8q2cutvOA0nMCkGCSqGSIb3DQEJNDEc
+MBowCQYFKw4DAhoFAKENBgkqhkiG9w0BAQEFADANBgkqhkiG9w0BAQEFAASCAQCK0q0a+tRcbMOO
+67WiaoxsC00zT9uKw9B9WZAHpoGzMK6moCamKFz/B0IzxaTBJ3UmxoyrDVQvv05o3pViHcNN3zrP
+d3UOjy49IDNpc940fld8+zANxlDjAcs5MmxS62fvkkhLrEJDQxPonY2JBg5FeSZuIbsGm7KBrDfI
+pAclBrejePqwqXWUt/jPYCQsbFflH4+p9GmI8EJ2wcLI9QghKVfvIAdpzZV75uBdILcjZ6mae9bo
+qKzcOjDC0D+j5SoC2CLL+HglZ5h98vWZ/NxXLBS/Deo8e8QdmgANP/iJyZSoAxo4rEVJn5VnNzZY
+JJddGU3G7UOLYxHuWWbSYoXXAAAAAAAA
+------=_Part_2_1861723968.1488017265003--

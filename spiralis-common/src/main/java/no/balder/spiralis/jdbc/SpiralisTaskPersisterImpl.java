@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.net.URI;
 import java.sql.*;
-import java.time.LocalDateTime;
-import java.time.temporal.TemporalAccessor;
 import java.util.Optional;
 
 /**
@@ -34,41 +32,41 @@ public class SpiralisTaskPersisterImpl implements SpiralisTaskPersister {
 
 
     @Override
-    public Long saveInboundTask(SpiralisReceptionTask spiralisReceptionTask, URI payloadUri, Optional<URI> evidencUri) {
+    public Long saveInboundTask(SpiralisReceptionTask spiralisReceptionTask, URI payloadUri, URI evidencUri) {
 
         LOGGER.debug("Saving " + spiralisReceptionTask);
 
         final String INSERT_INTO_MESSAGE_SQL =
                 "insert into message ( direction, \n" +  // 1
-                "       received,\n" +      // 2
-                "       sender, \n" +       // 3
-                "       receiver, \n" +     // 4
-                "       channel, \n" +      // 5
-                "       message_uuid, \n" + // 6
-                "       document_id, \n" +  // 7
-                "       process_id, \n" +   // 8
-                "       ap_name, \n" +      // 9
-                "       payload_url, \n" +  // 10
-                "       native_evidence_url, \n" + // 11
-                "       transmission_id, \n" +  // 12
-                "       instance_id, \n" +  // 13
-                "       account_id ) \n" +  // 14
-                "       values(?," + // 1 - direction
-                "           ?" +    // 2 - received
-                "           ,?" +   // 3 - sender
-                "           ,?" +   // 4 - receiver
-                "           ,?" +   // 5 - channel
-                "           ,?" +   // 6 - message_uuid
-                "           ,?" +   // 7 - document_id
-                "           ,?" +   // 8 - process_id (profile)
-                "           ,?" +   // 9 - Access Point identifier (sender's)
-                "           ,?" +   // 10 - URI of payload
-                "           ,?" +   // 11 - URI of evidence (AS2 MDN)
-                "           ,?" +   // 12 - transport id
-                "           ,?" +   // 13 - SBDH instance identifier
-                "           ,coalesce(\n" +
-                "               (select account_id from account_receiver where participant_id=?), null)\n" +   // 14
-                "       )";
+                        "       received,\n" +      // 2
+                        "       sender, \n" +       // 3
+                        "       receiver, \n" +     // 4
+                        "       channel, \n" +      // 5
+                        "       message_uuid, \n" + // 6
+                        "       document_id, \n" +  // 7
+                        "       process_id, \n" +   // 8
+                        "       ap_name, \n" +      // 9
+                        "       payload_url, \n" +  // 10
+                        "       evidence_url, \n" + // 11
+                        "       transmission_id, \n" +  // 12
+                        "       instance_id, \n" +  // 13
+                        "       account_id ) \n" +  // 14
+                        "       values(?," + // 1 - direction
+                        "           ?" +    // 2 - received
+                        "           ,?" +   // 3 - sender
+                        "           ,?" +   // 4 - receiver
+                        "           ,?" +   // 5 - channel
+                        "           ,?" +   // 6 - message_uuid
+                        "           ,?" +   // 7 - document_id
+                        "           ,?" +   // 8 - process_id (profile)
+                        "           ,?" +   // 9 - Access Point identifier (sender's)
+                        "           ,?" +   // 10 - URI of payload
+                        "           ,?" +   // 11 - URI of evidence (AS2 MDN)
+                        "           ,?" +   // 12 - transport id
+                        "           ,?" +   // 13 - SBDH instance identifier
+                        "           ,coalesce(\n" +
+                        "               (select account_id from account_receiver where participant_id=?), null)\n" +   // 14
+                        "       )";
         Connection con = null;
         try {
             con = dataSource.getConnection();
@@ -77,34 +75,31 @@ public class SpiralisTaskPersisterImpl implements SpiralisTaskPersister {
 
             // received
             {
-                final TemporalAccessor received = spiralisReceptionTask.getReceived();
-                final LocalDateTime localDateTime = LocalDateTime.from(received);
-                final Timestamp timestamp = Timestamp.valueOf(localDateTime);
+                final Timestamp timestamp = new Timestamp(spiralisReceptionTask.getInboundMetadata().getTimestamp().getTime());
+                LOGGER.debug("Inserting Timestamp :" + timestamp.toString());
                 ps.setTimestamp(2, timestamp);
             }
 
-            ps.setString(3, spiralisReceptionTask.getHeader().getSender().getIdentifier().toString());
-            ps.setString(4, spiralisReceptionTask.getHeader().getReceiver().getIdentifier().toString());
+            ps.setString(3, spiralisReceptionTask.getInboundMetadata().getHeader().getSender().getIdentifier().toString());
+            ps.setString(4, spiralisReceptionTask.getInboundMetadata().getHeader().getReceiver().getIdentifier().toString());
             ps.setString(5, "PEPPOL");
             ps.setString(6, spiralisReceptionTask.getReceptionId().value());
-            ps.setString(7, spiralisReceptionTask.getHeader().getDocumentType().getIdentifier().toString());
-            ps.setString(8, spiralisReceptionTask.getHeader().getProcess().getIdentifier().toString());
+            ps.setString(7, spiralisReceptionTask.getInboundMetadata().getHeader().getDocumentType().getIdentifier().toString());
+            ps.setString(8, spiralisReceptionTask.getInboundMetadata().getHeader().getProcess().getIdentifier().toString());
             ps.setString(9, spiralisReceptionTask.getSendersApId());
             ps.setString(10, payloadUri.toString());
-            if (evidencUri.isPresent()) {
-                ps.setString(11, evidencUri.get().toString());
-            } else
-                ps.setString(11, null);
+            ps.setString(11, evidencUri.toString().toString());
 
 
-
-            if (spiralisReceptionTask.getTransmissionId() != null) {
-                ps.setString(12, spiralisReceptionTask.getTransmissionId());
+            if (spiralisReceptionTask.getInboundMetadata().getTransmissionIdentifier() != null) {
+                ps.setString(12, spiralisReceptionTask.getInboundMetadata().getTransmissionIdentifier().getValue());
             } else
                 ps.setString(12, null);
 
-            ps.setString(13, spiralisReceptionTask.getHeader().getIdentifier().getValue());
-            ps.setString(14, spiralisReceptionTask.getHeader().getReceiver().getIdentifier().toString());
+            ps.setString(13, spiralisReceptionTask.getInboundMetadata().getHeader().getIdentifier().getValue());
+
+            final String receiverOrgNo = spiralisReceptionTask.getInboundMetadata().getHeader().getReceiver().getIdentifier().toString();
+            ps.setString(14, receiverOrgNo);
 
             ps.executeUpdate();
 
@@ -161,7 +156,7 @@ public class SpiralisTaskPersisterImpl implements SpiralisTaskPersister {
                 rm.setProcessTypeId(rs.getString("process_id"));
                 rm.setApName(rs.getString("ap_name"));
                 rm.setPayloadUrl(rs.getString("payload_url"));
-                rm.setNativeEvidenceUrl("native_evidence_url");
+                rm.setEvidenceUrl(rs.getString("evidence_url"));
                 return Optional.of(rm);
             } else
                 return Optional.empty();
@@ -171,68 +166,4 @@ public class SpiralisTaskPersisterImpl implements SpiralisTaskPersister {
         }
     }
 
-    public Long saveInboundTask2(SpiralisReceptionTask spiralisReceptionTask, URI payloadUri, Optional<URI> evidencUri) {
-
-        LOGGER.debug("Saving " + spiralisReceptionTask);
-
-        // TODO: rewrite with insert into .... select
-        //                                                             1           2           3       4       5       6               7           8           9           10          11                  12            13
-        final String INSERT_INTO_MESSAGE_SQL = "insert into message (account_id, direction, sender, receiver, channel, message_uuid, document_id, process_id, ap_name, payload_url, native_evidence_url, received, transmission_id ) values(?,?,?,?,?,?,?,?,?,?,?,?,?)";
-        Connection con = null;
-        try {
-            con = dataSource.getConnection();
-            final PreparedStatement ps = con.prepareStatement(INSERT_INTO_MESSAGE_SQL, Statement.RETURN_GENERATED_KEYS);
-            ps.setNull(1, Types.INTEGER);   // This will be set later
-            ps.setString(2, "IN");
-            ps.setString(3, spiralisReceptionTask.getHeader().getSender().getIdentifier().toString());
-            ps.setString(4, spiralisReceptionTask.getHeader().getReceiver().getIdentifier().toString());
-            ps.setString(5, "PEPPOL");
-            ps.setString(6, spiralisReceptionTask.getOxalisMessageId());
-            ps.setString(7, spiralisReceptionTask.getHeader().getDocumentType().toString());
-            ps.setString(8, spiralisReceptionTask.getHeader().getProcess().toString());
-            ps.setString(9, spiralisReceptionTask.getSendersApId());
-            ps.setString(10, payloadUri.toString());
-            if (evidencUri.isPresent()) {
-                ps.setString(11, evidencUri.get().toString());
-            } else
-                ps.setString(11, null);
-
-
-            final TemporalAccessor received = spiralisReceptionTask.getReceived();
-            final LocalDateTime localDateTime = LocalDateTime.from(received);
-            final Timestamp timestamp = Timestamp.valueOf(localDateTime);
-
-            ps.setTimestamp(12, timestamp);
-
-            if (spiralisReceptionTask.getTransmissionId() != null) {
-                ps.setString(13, spiralisReceptionTask.getTransmissionId());
-            } else
-                ps.setString(13, null);
-
-            ps.executeUpdate();
-
-            long generatedKey = 0;
-            if (con.getMetaData().supportsGetGeneratedKeys()) {
-                ResultSet rs = ps.getGeneratedKeys();
-                if (rs != null && rs.next()) {
-                    generatedKey = rs.getLong(1);
-                    LOGGER.debug("Inserted SpiralisReceptionTask with msg_no={}", generatedKey);
-                }
-            } else {
-                LOGGER.warn("insert into 'messge' table, auto generated keys not supported");
-            }
-            return generatedKey;
-
-        } catch (SQLException e) {
-            throw new IllegalStateException("Unable to persist with " + INSERT_INTO_MESSAGE_SQL + "; reason=" + e.getMessage(), e);
-        } finally {
-            if (con != null)
-                try {
-                    con.close();
-                } catch (SQLException e) {
-                    throw new IllegalStateException("Unable to close connection " + e.getMessage(), e);
-                }
-        }
-
-    }
 }

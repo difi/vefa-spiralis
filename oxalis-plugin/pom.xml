@@ -22,21 +22,44 @@
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
 
+        
+        <!-- Spiralis -->
         <dependency>
             <groupId>no.balder.spiralis</groupId>
             <artifactId>spiralis-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>no.balder.spiralis</groupId>
+            <artifactId>spiralis-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Oxalis -->
         <dependency>
             <groupId>no.difi.oxalis</groupId>
             <artifactId>oxalis-api</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>no.difi.oxalis</groupId>
+            <artifactId>oxalis-commons</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+            <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>

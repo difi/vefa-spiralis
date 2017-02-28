@@ -15,6 +15,7 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.InvalidKeyException;
@@ -24,6 +25,7 @@ import java.util.*;
 import java.util.stream.StreamSupport;
 
 import static no.balder.spiralis.TestResources.SAMPLE_INVOICE_XML;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
@@ -189,7 +191,7 @@ public class AzureMethodsTest {
             container.createIfNotExists();
 
             // Upload an invoice
-            final String blobName = "test/A/B/C/" + SAMPLE_INVOICE_XML;
+            final String blobName = SAMPLE_INVOICE_XML;
 
             CloudBlockBlob blob = container.getBlockBlobReference(blobName);
             File sourceFile = new File(sampleInvoiceURLOnLocalDisk.toURI());
@@ -285,31 +287,44 @@ public class AzureMethodsTest {
 
     @Test
     public void testBlobSasUri() throws Exception {
+        // Connects to Azure
         CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
+
+        // Establishes a client to make life easy
         CloudBlobClient serviceClient = account.createCloudBlobClient();
 
-        // Container name must be lower case.
+        // Grabs a reference to our container.
         CloudBlobContainer container = serviceClient.getContainerReference("invoice-out");
 
+        // ... and to our blob
+        CloudBlockBlob blockBlobReference = container.getBlockBlobReference(SAMPLE_INVOICE_XML);
 
-        for (ListBlobItem blobItem : container.listBlobs()) {
-            System.out.println(blobItem.getUri());
+        // Generates the shared access policy which will be used in the next step.
+        SharedAccessBlobPolicy sharedAccessPolicy = createSharedAccessPolicy(EnumSet.of(SharedAccessBlobPermissions.READ), 300);
 
-            CloudBlockBlob blockBlobReference = container.getBlockBlobReference(SAMPLE_INVOICE_XML);
+        // Generates the SAS token.
+        String sharedUri = blockBlobReference.generateSharedAccessSignature(sharedAccessPolicy, null);
+        // Creates a complete URI, which can be used for download using for example your browser.
+        String firstBlobUri = blockBlobReference.getUri().toString() + "?" + sharedUri;
 
-            System.out.println(blockBlobReference.getName());
+        System.out.println(firstBlobUri);
 
-            SharedAccessBlobPolicy sharedAccessPolicy = createSharedAccessPolicy(EnumSet.of(SharedAccessBlobPermissions.READ), 300);
-            String sharedUri = blockBlobReference.generateSharedAccessSignature(sharedAccessPolicy, null);
+        // Attempts to create a complete URI with SAS token, having only the URI of the blob
+        final URI uriOfBlob = blockBlobReference.getUri();
+        // Creates a new blob reference, using the credentials from our account
 
+        final CloudBlockBlob blob2 = new CloudBlockBlob(uriOfBlob, account.getCredentials());
+        // Generates the SAS token.
+        final String sas2 = blob2.generateSharedAccessSignature(sharedAccessPolicy, null);
+        // Creates the complete second URI with SAS token
+        final String secondBlobUri = blob2.getUri().toString() + "?" + sas2;
 
-            String s = blockBlobReference.getUri().toString() + "?" + sharedUri;
-            System.out.println(s);
+        // They should be identical
+        assertEquals(firstBlobUri, secondBlobUri);
 
-        }
-
-
+        System.out.println("Second uri:" + secondBlobUri);
     }
+
 
     @Test
     public void testModulus() throws Exception {

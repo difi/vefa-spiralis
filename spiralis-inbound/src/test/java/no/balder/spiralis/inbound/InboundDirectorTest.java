@@ -10,12 +10,18 @@ import no.balder.spiralis.payload.WellKnownFileTypeSuffix;
 import no.balder.spiralis.testutil.DummyFiles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Guice;
 import org.testng.annotations.Test;
 
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.StreamSupport;
+
+import static org.testng.Assert.assertEquals;
 
 /**
  * @author steinar
@@ -32,19 +38,27 @@ public class InboundDirectorTest {
 
     @Inject
     SpiralisTaskPersister spiralisTaskPersister;
+    private Path inboundDir;
+    private Path archiveDir;
 
-    @Test(enabled = false)
+    @BeforeMethod
+    public void setUp() throws Exception {
+        final Path rootDir = DummyFiles.createInboundDummyFilesInRootWithOptionalSubdirs("IN");
+        inboundDir = rootDir.resolve("IN");
+        archiveDir = rootDir.resolve("ARCHIVE");
+        Files.createDirectories(archiveDir);
+    }
+
+    @Test(enabled = true)
     public void hafslundTest() throws Exception {
 
-        // final Path inboundDummyFiles = DummyFiles.createInboundDummyFilesInRootWithSubdirs();
-        final Path inboundDirPath = Paths.get("/var/peppol/IN");
-        final Path archiveDirPath = Paths.get("/var/peppol/ARCHIVE");
+        // final Path inboundDummyFiles = DummyFiles.createInboundDummyFilesInRootWithOptionalSubdirs();
 
         final String azureConnectionString = config.getString(SpiralisConfigProperty.SPIRALIS_AZURE_CONNECT);
         final AzurePayloadStore payloadStore = new AzurePayloadStore(azureConnectionString);
 
-        final InboundDirector inboundDirector = new InboundDirector(inboundDirPath, archiveDirPath,
-                "glob:**" + WellKnownFileTypeSuffix.PAYLOAD.getSuffix(),
+        final InboundDirector inboundDirector = new InboundDirector(inboundDir, archiveDir,
+                "glob:**" + WellKnownFileTypeSuffix.META_JSON.getSuffix(),
                 payloadStore, spiralisTaskPersister);
 
         inboundDirector.startThreads();
@@ -58,9 +72,15 @@ public class InboundDirectorTest {
             statistics = inboundDirector.getProcessingStatistics();
 
             LOGGER.debug("Process statistics: " + statistics);
-        } while (statistics.getProcessed() < 1414);
+        } while (statistics.getProcessed() < 1);
 
         long elapsedMs = TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS);
         System.out.println("Processed " + statistics.getProcessed() + " in " + elapsedMs);
+
+
+        assertEquals( inboundDir.toFile().listFiles().length,0);
+
+        
+
     }
 }

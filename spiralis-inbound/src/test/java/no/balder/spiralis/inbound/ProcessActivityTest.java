@@ -7,7 +7,9 @@ import no.balder.spiralis.config.SpiralisInboundTestModuleFactory;
 import no.balder.spiralis.jdbc.SpiralisTaskPersister;
 import no.balder.spiralis.payload.AzurePayloadStore;
 import no.balder.spiralis.testutil.DummyFiles;
+import no.balder.spiralis.tool.gson.GsonHelper;
 import no.balder.spiralis.transport.ReceptionMetaData;
+import no.difi.oxalis.api.inbound.InboundMetadata;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Guice;
@@ -44,9 +46,14 @@ public class ProcessActivityTest {
     DataSource dataSource;
     private Path rootPath;
 
+    /**
+     * Creates a directory holding a set of files received.
+     *
+     * @throws Exception
+     */
     @BeforeMethod
     public void setUp() throws Exception {
-        rootPath = DummyFiles.createInboundDummyFilesInRootWithSubdirs();
+        rootPath = DummyFiles.createInboundDummyFilesInRootWithOptionalSubdirs();
     }
 
     @AfterMethod
@@ -55,12 +62,17 @@ public class ProcessActivityTest {
         DummyFiles.removeAll(rootPath);
     }
 
+
     @Test
     public void processSingleTask() throws Exception {
 
         assertNotNull(rootPath);
+
         // Creates directory with sample input files
-        final List<Path> paths = DummyFiles.locatePayloadFilesIn(rootPath);
+        final List<Path> paths = DummyFiles.locateJsonMetaData(rootPath);
+
+        final List<Path> jsonMetaData = DummyFiles.locateJsonMetaData(rootPath);
+        final InboundMetadata inboundMetadata = GsonHelper.fromJson(jsonMetaData.get(0));
 
         // Creates the SpiralisReceptionTask based upon the contents in the sample dummy files
         final SpiralisReceptionTask spiralisReceptionTask = SpiralisTaskFactory.insepctInbound(paths.get(0));
@@ -89,7 +101,7 @@ public class ProcessActivityTest {
 
         // The input files should have been moved away
         assertFalse(Files.exists(spiralisReceptionTask.getPayloadPath()), "The original payload is still there");  // The entry should have been moved away now
-        assertFalse(Files.exists(spiralisReceptionTask.getSmimePath()), "The original S/MIME (MDN) file is still there");  // The entry should have been moved away now
+        assertFalse(Files.exists(spiralisReceptionTask.getRemEvidencePath()), "The original REM evidence file is still there");  // The entry should have been moved away now
 
         List<Path> archivedPaths = new ArrayList<>();
         Files.walkFileTree(archive, new SimpleFileVisitor<Path>() {
@@ -101,7 +113,7 @@ public class ProcessActivityTest {
         });
 
         // And there should be two files in the archive
-        assertEquals(archivedPaths.size(), 2);
+        assertEquals(archivedPaths.size(), 4);
 
         // Verifies the contents of the database ....
         assertNotNull(dataSource);
@@ -111,6 +123,7 @@ public class ProcessActivityTest {
         final Optional<ReceptionMetaData> byReceptionId = spiralisTaskPersister.findByReceptionId(spiralisReceptionTask.getReceptionId());
         assertTrue(byReceptionId.isPresent());
         final ReceptionMetaData rm = byReceptionId.get();
+        assertNotNull(rm.getAccountId());
         assertNotNull(rm.getDirection());
         assertNotNull(rm.getReceived());
         assertNull(rm.getDelivered());
@@ -119,15 +132,15 @@ public class ProcessActivityTest {
         assertNotNull(rm.getChannel());
         assertNotNull(rm.getReceptionId());
         assertNotNull(rm.getTransmissionId());
-        assertNotNull(rm.getInstanceId());
+        assertNotNull(rm.getInstanceId(), inboundMetadata.getHeader().getIdentifier().getValue());
         assertNotNull(rm.getDocumentTypeId());
         assertNotNull(rm.getProcessTypeId());
         assertNotNull(rm.getApName());
+        assertTrue(rm.getApName().contains("APP_"), "Seems the access point identifier was not extraced from the Certificate:" + rm.getApName());
         assertNotNull(rm.getPayloadUrl());
-        assertNotNull(rm.getNativeEvidenceUrl());
+        assertNotNull(rm.getEvidenceUrl());
 
-
-        // Verifies the contents of the Blob store
+        // TODO: Verify contents of Blob store
         
 
 

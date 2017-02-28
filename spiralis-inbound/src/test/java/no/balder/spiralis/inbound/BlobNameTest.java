@@ -1,17 +1,17 @@
 package no.balder.spiralis.inbound;
 
-import no.balder.spiralis.payload.PayloadPathUtil;
-import no.balder.spiralis.payload.WellKnownFileTypeSuffix;
+import no.balder.spiralis.payload.ReceptionPathUtil;
 import no.balder.spiralis.testutil.DummyFiles;
-import no.difi.vefa.peppol.common.model.*;
+import no.balder.spiralis.transport.ReceptionId;
+import no.difi.vefa.peppol.common.model.ParticipantIdentifier;
 import org.testng.annotations.Test;
 
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.OffsetDateTime;
 import java.util.Date;
+import java.util.List;
 
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -24,33 +24,24 @@ import static org.testng.Assert.assertTrue;
 public class BlobNameTest {
 
 
-    @Test   (enabled = false)
+    @Test   (enabled = true)
     public void testCreate() throws Exception {
 
-        final URL url = DummyFiles.samplePayloadUrl();
-        final InstanceType instanceType = InstanceType.of("UBL", "ttt", "v1");
-        final InstanceIdentifier instanceIdentifier = InstanceIdentifier.generateUUID();
+        final Path rootDir = DummyFiles.createInboundDummyFilesInRootWithOptionalSubdirs();
+        final List<Path> paths = DummyFiles.locatePayloadFilesIn(rootDir);
 
-        Header header =  Header.of(ParticipantIdentifier.of("9908:976098897"), ParticipantIdentifier.of("9908:123321678"), ProcessIdentifier.of("rubbish"), DocumentTypeIdentifier.of("dummy"), instanceIdentifier, instanceType, new Date());
-        final URI uri = url.toURI();
-        System.out.println("Creating path from : " + uri.toString());
-        final Path payloadPath = Paths.get(uri);
-        final SpiralisReceptionTask spiralisReceptionTask = new SpiralisReceptionTask(payloadPath, header);
-        spiralisReceptionTask.setReceived(OffsetDateTime.now());
+        final Path payloadPath = paths.get(0);
 
-        // Creates the path of the S/MIME file
-        final String smimeFileName = payloadPath.getFileName().toString().replace(WellKnownFileTypeSuffix.PAYLOAD.getSuffix(), WellKnownFileTypeSuffix.AS2_RECEIPT.getSuffix());
-        final Path smimePath = payloadPath.getParent().resolve(smimeFileName);
-        spiralisReceptionTask.setSmimePath(smimePath);
-        
-        final String newPayloadBlobName = BlobName.createInboundBlobName(spiralisReceptionTask, spiralisReceptionTask::getPayloadPath);
-        assertTrue(newPayloadBlobName.contains(spiralisReceptionTask.getReceptionId().toString()),"Seems the blob name does not contain the UUID of the reception");
-        assertFalse(newPayloadBlobName.contains(PayloadPathUtil.fileNameBodyPart(spiralisReceptionTask.getPayloadPath())), "Blob name should not contain the name of the original file");
+
+        final ReceptionId receptionId = new ReceptionId();
+        final Date timeStamp = new Date();
+        final String orgNo = "976098897";
+        final ParticipantIdentifier sender = ParticipantIdentifier.of("9908:" + orgNo);
+        final String newPayloadBlobName = BlobName.createInboundBlobName(receptionId, timeStamp, sender, payloadPath);
+
+        assertTrue(newPayloadBlobName.contains(receptionId.toString()),"Seems the blob name does not contain the UUID of the reception");
+        assertFalse(newPayloadBlobName.contains(ReceptionPathUtil.fileNameBodyPart(payloadPath)), "Blob name should not contain the name of the original file");
         System.out.println(newPayloadBlobName);
-
-        final String newSmimeBlobName = BlobName.createInboundBlobName(spiralisReceptionTask, spiralisReceptionTask::getSmimePath);
-        assertTrue(newSmimeBlobName.contains(spiralisReceptionTask.getReceptionId().toString()));
-        System.out.println(newSmimeBlobName);
 
     }
 

@@ -14,7 +14,7 @@ import java.util.Optional;
  */
 public interface SpiralisTaskPersister {
 
-    Long saveInboundTask(SpiralisReceptionTask spiralisReceptionTask, URI payloadBlobUri, Optional<URI> smimeBlobUri);
+    Long saveInboundTask(SpiralisReceptionTask spiralisReceptionTask, URI payloadBlobUri, URI evidenceUri);
 
     Optional<ReceptionMetaData> findByReceptionId(ReceptionId receptionId);
 }

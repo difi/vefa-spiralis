@@ -31,7 +31,7 @@ public class ScanActivityTest {
     public void testStartThreads() throws Exception {
 
         // Creates dummy files
-        final Path testRootPath = DummyFiles.createInboundDummyFilesInRootWithSubdirs();
+        final Path testRootPath = DummyFiles.createInboundDummyFilesInRootWithOptionalSubdirs();
 
         // Creates the ScanActivity instance
         BlockingQueue<Path> queue = new LinkedBlockingQueue<>();
@@ -47,7 +47,7 @@ public class ScanActivityTest {
         } while (scanned < 3 && System.currentTimeMillis() < start + 1000);
 
         // In case we timed out of the loop, verify that we actually found 3 items.
-        assertEquals(queue.size(), 3);
+        assertEquals(queue.size(), 4);
 
         // Writes another dummy file
         Files.write(testRootPath.resolve("dummy-doc.xml"), "rubbish".getBytes());

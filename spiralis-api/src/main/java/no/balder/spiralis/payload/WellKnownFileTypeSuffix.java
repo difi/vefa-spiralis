@@ -8,16 +8,19 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * Represents a collection of file name suffixes to be found for each transmission
+ *
  * @author steinar
  *         Date: 06.02.2017
  *         Time: 15.40
  */
 public enum WellKnownFileTypeSuffix {
 
-    PAYLOAD("-doc.xml"),
-    AS2_RECEIPT("-rcpt.smime"),
-    REM_EVIDENCE("-rem.xml"),
-    UNKNOWN("-unknown.unknown");
+    PAYLOAD(".doc.xml"),
+    AS2_RECEIPT(".receipt.smime"),
+    META_JSON(".meta.json"),
+    REM_EVIDENCE(".receipt.dat"),
+    UNKNOWN(".unknown.unknown");
 
     private final String suffix;
 
@@ -36,14 +39,19 @@ public enum WellKnownFileTypeSuffix {
      * @return
      */
     public static String globOfAllTypesInSubdirs() {
-        final String listOfTypes = Stream.of(PAYLOAD, AS2_RECEIPT, REM_EVIDENCE)
+        final String listOfTypes = Stream.of(values())
+                .filter(suffix -> suffix != UNKNOWN)
                 .map(WellKnownFileTypeSuffix::getSuffix)
                 .collect(Collectors.joining(","));
         final String glob = "glob:**{" + listOfTypes + "}";
         return glob;
     }
 
-    public static WellKnownFileTypeSuffix[] knownValues() {
-        return new WellKnownFileTypeSuffix[] {PAYLOAD, AS2_RECEIPT, REM_EVIDENCE};
+    /**
+     * Provides a file system glob crossing directory boundaries for this suffix.
+     * @return a complete file system glob to be used by the
+     */
+    public String glob(){
+        return "glob:**{" + suffix + "}";
     }
 }

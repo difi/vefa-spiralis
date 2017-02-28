@@ -47,6 +47,12 @@ class ScanActivity {
         startTaskScanning(scannedTasksQueue);
     }
 
+    /**
+     * Starts the scanning of the given directory tree.
+     *
+     * @param scannedTasksQueue
+     * @throws InterruptedException
+     */
     private void startTaskScanning(BlockingQueue<Path> scannedTasksQueue) throws InterruptedException {
 
         executorService = Executors.newFixedThreadPool(2);

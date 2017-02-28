@@ -1,6 +1,7 @@
 package no.balder.spiralis;
 
-import eu.peppol.identifier.MessageId;
+
+import no.difi.oxalis.api.model.TransmissionIdentifier;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -13,16 +14,16 @@ import java.net.URI;
 public class OutboundTransmissionRequest implements Serializable {
 
     final URI payloadUri;
-    final MessageId messageId;
+    final TransmissionIdentifier transmissionIdentifier;
     private final boolean validationRequired;
     private final String sender;
     private final String receiver;
     private final String documentTypeId;
     private final String processTypeId;
 
-    public OutboundTransmissionRequest(MessageId messageId, URI payloadUri, boolean validationRequired, String sender, String receiver, String documentTypeId, String processTypeId) {
+    public OutboundTransmissionRequest(TransmissionIdentifier transmissionIdentifier, URI payloadUri, boolean validationRequired, String sender, String receiver, String documentTypeId, String processTypeId) {
         this.payloadUri = payloadUri;
-        this.messageId = messageId;
+        this.transmissionIdentifier = transmissionIdentifier;
         this.validationRequired = validationRequired;
         this.sender = sender;
         this.receiver = receiver;
@@ -36,8 +37,8 @@ public class OutboundTransmissionRequest implements Serializable {
         return payloadUri;
     }
 
-    public MessageId getMessageId() {
-        return messageId;
+    public TransmissionIdentifier getTransmissionId() {
+        return transmissionIdentifier;
     }
 
     @Override
@@ -48,13 +49,13 @@ public class OutboundTransmissionRequest implements Serializable {
         OutboundTransmissionRequest that = (OutboundTransmissionRequest) o;
 
         if (!payloadUri.equals(that.payloadUri)) return false;
-        return messageId.equals(that.messageId);
+        return transmissionIdentifier.equals(that.transmissionIdentifier);
     }
 
     @Override
     public int hashCode() {
         int result = payloadUri.hashCode();
-        result = 31 * result + messageId.hashCode();
+        result = 31 * result + transmissionIdentifier.hashCode();
         return result;
     }
 
@@ -62,7 +63,7 @@ public class OutboundTransmissionRequest implements Serializable {
     public String toString() {
         final StringBuilder sb = new StringBuilder("OutboundTransmissionRequest{");
         sb.append("payloadUri=").append(payloadUri);
-        sb.append(", messageId=").append(messageId);
+        sb.append(", messageId=").append(transmissionIdentifier);
         sb.append(", validationRequired=").append(validationRequired);
         sb.append(", sender='").append(sender).append('\'');
         sb.append(", receiver='").append(receiver).append('\'');
@@ -90,5 +91,9 @@ public class OutboundTransmissionRequest implements Serializable {
 
     public String getProcessTypeId() {
         return processTypeId;
+    }
+
+    public TransmissionIdentifier getTransmissionIdentifier() {
+        return transmissionIdentifier;
     }
 }

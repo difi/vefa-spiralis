@@ -55,12 +55,12 @@ class ContainerUtil {
      * @param path
      * @return
      */
-    static String getBaseFileNameOnly(Path path) {
+    static String getBaseFileNameOnly(Path path) {               
         // Extracts the filename part
         final Path fileName = path.getFileName();
 
         // Strips of the extension
-        final Pattern pattern = Pattern.compile("(.*)-(rcpt.smime|doc.xml|rem.xml)$");
+        final Pattern pattern = Pattern.compile("(.*)\\.(receipt.smime|doc.xml|receipt.dat|meta.json)$");  // TODO: externalize the regexp
         final Matcher matcher = pattern.matcher(fileName.toString());
         if (matcher.find()) {
             final String baseFileName = matcher.group(1);

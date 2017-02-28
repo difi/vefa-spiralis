@@ -2,7 +2,7 @@ package no.balder.spiralis.inbound;
 
 import com.google.inject.Inject;
 import no.balder.spiralis.jdbc.SpiralisTaskPersister;
-import no.balder.spiralis.payload.PayloadPathUtil;
+import no.balder.spiralis.payload.ReceptionPathUtil;
 import no.balder.spiralis.payload.PayloadStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +10,9 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -41,7 +44,7 @@ class ProcessActivity {
         this.inboundRootPath = inboundRootPath;
         this.archivePath = archivePath;
 
-        if (PayloadPathUtil.overlaps(inboundRootPath, archivePath)) {
+        if (ReceptionPathUtil.overlaps(inboundRootPath, archivePath)) {
             throw new InvalidPathException("The paths overlap each other", inboundRootPath + " and " + archivePath + " can not be used in combination");
         }
     }
@@ -76,35 +79,32 @@ class ProcessActivity {
                             continue;
                         }
 
-                        final Path path = spiralisReceptionTask.getPayloadPath();
 
-                        LOGGER.debug("Processing " + spiralisReceptionTask);
+                        final URI payloadUri = uploadPath(payloadStore, spiralisReceptionTask, spiralisReceptionTask.getPayloadPath());
+                        final URI evidenceUri = uploadPath(payloadStore, spiralisReceptionTask, spiralisReceptionTask.getRemEvidencePath());
 
-                        String blobName = BlobName.createInboundBlobName(spiralisReceptionTask, spiralisReceptionTask::getPayloadPath);
-
-                        LOGGER.debug("Uploading " + path + " to " + blobName);
-                        final URI payloadBlobUri = payloadStore.upload(path, blobName);
-                        LOGGER.debug("Uploaded " + payloadBlobUri);
-
-                        // Handles the transport receipt, if present
-                        URI smimeBlobUri = null;
-                        if (spiralisReceptionTask.getSmimePath() != null) {
-                            String smimeBlobName = BlobName.createInboundBlobName(spiralisReceptionTask, spiralisReceptionTask::getSmimePath);
-                            LOGGER.debug("Uploading " + spiralisReceptionTask.getSmimePath() + " to " + smimeBlobName);
-                            smimeBlobUri = payloadStore.upload(spiralisReceptionTask.getSmimePath(), smimeBlobName);
-                            LOGGER.debug("Uploaded " + smimeBlobUri);
-                        } else {
-                            LOGGER.warn("No transport receipt found for " + spiralisReceptionTask);
+                        final List<Path> uploadedPaths = Arrays.asList(new Path[]{spiralisReceptionTask.getPayloadPath(), spiralisReceptionTask.getRemEvidencePath()});
+                        final List<Path> remaining = new ArrayList(spiralisReceptionTask.getAssociatedFiles());
+                        final boolean removalPerformed = remaining.removeAll(uploadedPaths);
+                        if (removalPerformed == false) {
+                            throw new IllegalStateException("Unable to create list of remaining paths to be uploaded");
                         }
 
+
+                        // Uploads all the other files.
+                        for (Path path : remaining) {
+                            final URI uri = uploadPath(payloadStore, spiralisReceptionTask, path);
+                        }
+
+
                         // Inserts the metadata into the database
-                        final Long aLong = spiralisTaskPersister.saveInboundTask(spiralisReceptionTask, payloadBlobUri, Optional.ofNullable(smimeBlobUri));
+                        final Long aLong = spiralisTaskPersister.saveInboundTask(spiralisReceptionTask, payloadUri, evidenceUri);
+
 
                         // Mark payload as processed by moving the files into the archive
-                        PayloadPathUtil.moveWithSubdirIntact(inboundRootPath, spiralisReceptionTask.getPayloadPath(), archivePath);
-
-                        if (spiralisReceptionTask.getSmimePath() != null)
-                            PayloadPathUtil.moveWithSubdirIntact(inboundRootPath, spiralisReceptionTask.getSmimePath(), archivePath);
+                        for (Path path : spiralisReceptionTask.getAssociatedFiles()) {
+                            ReceptionPathUtil.moveWithSubdirIntact(inboundRootPath, path, archivePath);
+                        }
 
                     } catch (Exception e) {
                         LOGGER.error("Error during processing " + e.getMessage(), e);
@@ -122,6 +122,25 @@ class ProcessActivity {
                 return null;
             }
         };
+    }
+
+    /**
+     * Helper method
+     * 
+     * @param payloadStore the payload store object
+     * @param spiralisReceptionTask the reception task holding all the meta data
+     * @param path the path of the file to be uploaded
+     * @return the new URI created by the {@link PayloadStore}
+     */
+    static URI uploadPath(PayloadStore payloadStore, SpiralisReceptionTask spiralisReceptionTask, Path path) {
+        final String blobName = BlobName.createInboundBlobName(spiralisReceptionTask.getReceptionId(),
+                spiralisReceptionTask.getInboundMetadata().getTimestamp(),
+                spiralisReceptionTask.getInboundMetadata().getHeader().getSender(),
+                path);
+
+        LOGGER.debug("Uploading " + path + " to " + blobName);
+        final URI uploadUri = payloadStore.upload(path, blobName);
+        return uploadUri;
     }
 
 

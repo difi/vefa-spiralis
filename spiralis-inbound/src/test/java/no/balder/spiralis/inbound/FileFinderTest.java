@@ -31,7 +31,7 @@ public class FileFinderTest {
     @Test
     public void testFindFiles() throws Exception {
 
-        Path root = DummyFiles.createInboundDummyFilesInRootWithSubdirs();
+        Path root = DummyFiles.createInboundDummyFilesInRootWithOptionalSubdirs();
 
         BlockingQueue<Path> queue = new LinkedBlockingDeque<>();
 
@@ -40,7 +40,7 @@ public class FileFinderTest {
         FileFinder fileFinder = new FileFinder(root, WellKnownFileTypeSuffix.globOfAllTypesInSubdirs(), queue);
         fileFinder.findFiles();
 
-        assertEquals(queue.size(),3);
+        assertEquals(queue.size(),4);
 
         // Clean up
         DummyFiles.removeAll(root);

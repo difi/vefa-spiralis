@@ -23,7 +23,7 @@ public class ReceptionMetaData {
     private String processTypeId;
     private String apName;
     private String payloadUrl;
-    private String nativeEvidenceUrl;
+    private String evidenceUrl;
 
     public void setMessageNo(int messageNo) {
         this.messageNo = messageNo;
@@ -146,11 +146,34 @@ public class ReceptionMetaData {
         return payloadUrl;
     }
 
-    public void setNativeEvidenceUrl(String nativeEvidenceUrl) {
-        this.nativeEvidenceUrl = nativeEvidenceUrl;
+    public void setEvidenceUrl(String evidenceUrl) {
+        this.evidenceUrl = evidenceUrl;
     }
 
-    public String getNativeEvidenceUrl() {
-        return nativeEvidenceUrl;
+    public String getEvidenceUrl() {
+        return evidenceUrl;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ReceptionMetaData{");
+        sb.append("messageNo=").append(messageNo);
+        sb.append(", accountId=").append(accountId);
+        sb.append(", direction='").append(direction).append('\'');
+        sb.append(", received=").append(received);
+        sb.append(", delivered=").append(delivered);
+        sb.append(", sender='").append(sender).append('\'');
+        sb.append(", receiver='").append(receiver).append('\'');
+        sb.append(", channel='").append(channel).append('\'');
+        sb.append(", receptionId='").append(receptionId).append('\'');
+        sb.append(", transmissionId='").append(transmissionId).append('\'');
+        sb.append(", instanceId='").append(instanceId).append('\'');
+        sb.append(", documentTypeId='").append(documentTypeId).append('\'');
+        sb.append(", processTypeId='").append(processTypeId).append('\'');
+        sb.append(", apName='").append(apName).append('\'');
+        sb.append(", payloadUrl='").append(payloadUrl).append('\'');
+        sb.append(", evidenceUrl='").append(evidenceUrl).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

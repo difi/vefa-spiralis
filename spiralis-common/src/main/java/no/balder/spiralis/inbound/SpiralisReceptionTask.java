@@ -1,10 +1,13 @@
 package no.balder.spiralis.inbound;
 
+import no.balder.spiralis.payload.WellKnownFileTypeSuffix;
 import no.balder.spiralis.transport.ReceptionId;
-import no.difi.vefa.peppol.common.model.Header;
+import no.difi.oxalis.api.inbound.InboundMetadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.time.temporal.TemporalAccessor;
+import java.util.List;
 
 /**
  * @author steinar
@@ -13,59 +16,60 @@ import java.time.temporal.TemporalAccessor;
  */
 public class SpiralisReceptionTask {
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(SpiralisReceptionTask.class);
+
     // Holds the unique identification of this reception
     private final ReceptionId receptionId = new ReceptionId();
-
-    private final Path payloadPath;        // the payload
-    private final Header header;    // SBDH header
-    private Path smimePath;         // the transport receipt
-    private String transmissionId;  // the transport-ID retrieved from the receipt
-    private TemporalAccessor received;
-    private String oxalisMessageId;
+    private Path payloadPath;        // the payload
+    private Path remEvidencePath;       // the REM evidence
+    private final List<Path> associatedFiles;
+    private final InboundMetadata inboundMetadata;
     private String sendersApId = "UNKNOWN";
 
 
-    public SpiralisReceptionTask(Path payloadPath, Header header) {
+    public SpiralisReceptionTask(List<Path> associatedFiles, InboundMetadata inboundMetadata) {
+        this.associatedFiles = associatedFiles;
+        this.inboundMetadata = inboundMetadata;
 
-        this.payloadPath = payloadPath;
-        this.header = header;
+        remEvidencePath = null;
+        for (Path path : associatedFiles) {
+            if (path.getFileName().toString().endsWith(WellKnownFileTypeSuffix.REM_EVIDENCE.getSuffix())) {
+                remEvidencePath = path;
+            }
+
+            if (path.getFileName().toString().endsWith(WellKnownFileTypeSuffix.PAYLOAD.getSuffix())) {
+                payloadPath = path;
+            }
+        }
+
+        if (remEvidencePath == null) {
+            LOGGER.warn("No REM evidence path found in list of associated files: " + associatedFiles);
+        }
+        
+        if (payloadPath == null) {
+            throw new IllegalStateException("No payload file found in list of associated files: " + associatedFiles);
+        }
     }
 
     public ReceptionId getReceptionId() {
         return receptionId;
     }
 
+
     public Path getPayloadPath() {
         return payloadPath;
     }
 
-    public Header getHeader() {
-        return header;
+    public Path getRemEvidencePath() {
+        return remEvidencePath;
     }
 
-
-    public void setSmimePath(Path smimePath) {
-        this.smimePath = smimePath;
+    public InboundMetadata getInboundMetadata() {
+        return inboundMetadata;
     }
 
-    public Path getSmimePath() {
-        return smimePath;
-    }
-
-    public void setTransmissionId(String transmissionId) {
-        this.transmissionId = transmissionId;
-    }
-
-    public String getTransmissionId() {
-        return transmissionId;
-    }
-
-    public TemporalAccessor getReceived() {
-        return received;
-    }
-
-    public void setReceived(TemporalAccessor received) {
-        this.received = received;
+    public List<Path> getAssociatedFiles() {
+        return associatedFiles;
     }
 
     @Override
@@ -73,29 +77,13 @@ public class SpiralisReceptionTask {
         final StringBuilder sb = new StringBuilder("SpiralisReceptionTask{");
         sb.append("receptionId=").append(receptionId);
         sb.append(", payloadPath=").append(payloadPath);
-        sb.append(", header=").append(header);
-        sb.append(", smimePath=").append(smimePath);
-        sb.append(", transmissionId='").append(transmissionId).append('\'');
-        sb.append(", received=").append(received);
-        sb.append(", oxalisMessageId='").append(oxalisMessageId).append('\'');
+        sb.append(", inboundMetadata=").append(inboundMetadata);
         sb.append(", sendersApId='").append(sendersApId).append('\'');
         sb.append('}');
         return sb.toString();
     }
 
-    public void setOxalisMessageId(String oxalisMessageId) {
-        this.oxalisMessageId = oxalisMessageId;
-    }
-
-    public String getOxalisMessageId() {
-        return oxalisMessageId;
-    }
-
-    public void setSendersApId(String sendersApId) {
-        this.sendersApId = sendersApId;
-    }
-
     public String getSendersApId() {
-        return sendersApId;
+        return inboundMetadata.getCertificate().getSubjectDN().toString();
     }
 }
