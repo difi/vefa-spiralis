@@ -3,7 +3,7 @@
 
     <groupId>no.balder.spiralis</groupId>
     <artifactId>spiralis</artifactId>
-    <version>1.0-RC1</version>
+    <version>1.0-RC2-SNAPSHOT</version>
     <modules>
         <module>spiralis-api</module>
         <module>oxalis-plugin</module>
@@ -21,7 +21,7 @@
         <connection>scm:git:git@github.com:difi/vefa-spiralis.git</connection>
         <url>scm:git:git@github.com:difi/vefa-spiralis.git</url>
         <developerConnection>scm:git:git@github.com:difi/vefa-spiralis.git</developerConnection>
-        <tag>spiralis-1.0-RC1</tag>
+        <tag>HEAD</tag>
     </scm>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
