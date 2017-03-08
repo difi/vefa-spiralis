@@ -61,7 +61,64 @@ This standalone executable program will scan the "inbound" directory and for eac
  1. Uploads the files to persistent storage
  1. Writes the metadata to the DBMS using JDBC.
 
-## JDBC configuration
+## Configuration
+
+```
+spiralis {
+    inbound.directory : /var/peppol/IN
+    azure {
+	    account    : ****testdata01
+	    access-key : "eOAASM/8sB****************************************************************************=="
+	    protocol   : http
+	    connect    : "DefaultEndpointsProtocol="${spiralis.azure.protocol};"AccountName="${spiralis.azure.account};"AccountKey="${spiralis.azure.access-key}
+	}
+}
+include "jdbc.conf"
+```
+
+### JDBC Configuration
+
+The following describes how to set up the configuration for JDBC in a separate file:
+
+```
+// Default configuration uses H2, which should be on the classpath
+jdbc {
+	connection.uri : "jdbc:h2:~/.oxalis/ap;AUTO_SERVER=TRUE"
+	driver.class {
+	    path : ""
+	    name : "org.h2.Driver"
+	}
+	user: "SA"
+	password : ""
+	validation.query : "select now()"
+}
+```
+
+Please note that this configuration assumes that you are using the H2 database, which is included as
+ part of Spiralis.
+
+If you intend to use a different database, you must to set the property `jdbc.driver.class.path` to ensure
+that Spiralis is able to instantiate the JDBC driver.
+
+#### MS SQL Server example configuration
+```
+// Example configuration for MS SQL Server
+jdbc {
+  connection.uri : "jdbc:sqlserver://hmaptestdb001.database.windows.net:1433;database=dbname;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;"
+  driver.class {
+    path : "file:///Users/steinar/.m2/repository/com/microsoft/sqlserver/sqljdbc42/4.2/sqljdbc42-4.2.jar"
+    name : "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+  }
+  user: "user@dbname"
+  password : "************"
+  validation.query : ""
+}
+```
+
+
+## Configuration files
+
+Spiralis uses the Typesafe Config library.
 
 Configuration properties take presedence in this order:
 
