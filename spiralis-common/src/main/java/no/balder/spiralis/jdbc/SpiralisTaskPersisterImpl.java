@@ -88,7 +88,7 @@ public class SpiralisTaskPersisterImpl implements SpiralisTaskPersister {
             ps.setString(8, spiralisReceptionTask.getInboundMetadata().getHeader().getProcess().getIdentifier().toString());
             ps.setString(9, spiralisReceptionTask.getSendersApId());
             ps.setString(10, payloadUri.toString());
-            ps.setString(11, evidencUri.toString().toString());
+            ps.setString(11, evidencUri != null ? evidencUri.toString() : null);
 
 
             if (spiralisReceptionTask.getInboundMetadata().getTransmissionIdentifier() != null) {

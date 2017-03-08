@@ -81,7 +81,13 @@ class ProcessActivity {
 
 
                         final URI payloadUri = uploadPath(payloadStore, spiralisReceptionTask, spiralisReceptionTask.getPayloadPath());
-                        final URI evidenceUri = uploadPath(payloadStore, spiralisReceptionTask, spiralisReceptionTask.getRemEvidencePath());
+
+                        // Evidence
+                        URI evidenceUri = null;
+                        if (spiralisReceptionTask.getRemEvidencePath() != null) {
+                            evidenceUri = uploadPath(payloadStore, spiralisReceptionTask, spiralisReceptionTask.getRemEvidencePath());
+                        } else
+                            LOGGER.warn("No evidence found for {}", spiralisReceptionTask.getPayloadPath());
 
                         final List<Path> uploadedPaths = Arrays.asList(new Path[]{spiralisReceptionTask.getPayloadPath(), spiralisReceptionTask.getRemEvidencePath()});
                         final List<Path> remaining = new ArrayList(spiralisReceptionTask.getAssociatedFiles());
@@ -140,6 +146,7 @@ class ProcessActivity {
 
         LOGGER.debug("Uploading " + path + " to " + blobName);
         final URI uploadUri = payloadStore.upload(path, blobName);
+        LOGGER.debug("Uploaded " + path + " to " + uploadUri);
         return uploadUri;
     }
 

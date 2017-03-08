@@ -121,7 +121,7 @@ public class AzureMethodsTest {
 
     }
 
-    @Test
+    @Test(enabled = false)
     public void testListContainers() throws Exception {
         // Retrieve storage account from connection-string.
         CloudStorageAccount storageAccount = CloudStorageAccount.parse(storageConnectionString);
@@ -137,7 +137,7 @@ public class AzureMethodsTest {
     }
 
 
-    @Test
+    @Test(enabled = false)
     public void listBlobCountInPeppolContainers() throws Exception {
 
         // Retrieve storage account from connection-string.
@@ -159,7 +159,7 @@ public class AzureMethodsTest {
         }
     }
 
-    @Test
+    @Test(enabled = false)
     public void listPeppolApBlobsInAllContainers() throws URISyntaxException, InvalidKeyException {
         // Retrieve storage account from connection-string.
         CloudStorageAccount storageAccount = CloudStorageAccount.parse(storageConnectionString);

@@ -7,7 +7,7 @@ package no.balder.spiralis;
  */
 public class TestResources {
 
-    public static final String SAMPLE_INVOICE_XML = "sample-invoice-doc.xml";
+    public static final String SAMPLE_INVOICE_XML = "sample-invoice.doc.xml";
 
 
 }

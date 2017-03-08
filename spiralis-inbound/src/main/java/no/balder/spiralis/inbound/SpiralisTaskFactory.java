@@ -48,7 +48,12 @@ class SpiralisTaskFactory {
 
 
         // Grabs the meta data
+        LOGGER.debug("Loading JSON from " + metaPath);
         final InboundMetadata inboundMetadata = GsonHelper.fromJson(metaPath);
+        if (inboundMetadata == null) {
+            throw new IllegalStateException("No JSON metadata found in " + metaPath);
+        }
+        
         Header header = inboundMetadata.getHeader();
 
         // Locates all files belonging to this reception, i.e. files having the same baseFileName

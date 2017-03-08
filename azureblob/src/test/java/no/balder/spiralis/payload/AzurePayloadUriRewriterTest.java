@@ -19,7 +19,7 @@ public class AzurePayloadUriRewriterTest {
         final AzurePayloadUriRewriter azurePayloadUriRewriter = new AzurePayloadUriRewriter();
 
         final URI uri = new URI("http://hmaptestdata01.blob.core.windows.net/invoice-out/sample-invoice-doc.xml");
-        final URI rewritten = azurePayloadUriRewriter.rewrite(uri, null);
+        final URI rewritten = azurePayloadUriRewriter.rewrite(uri);
 
         System.out.println(rewritten);
     }

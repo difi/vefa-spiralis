@@ -39,12 +39,13 @@ Configuration properties take presedence in this order:
 
  ```
 
+## Concepts
 
-Reception : represents the reception of an incoming message. A unique identifcation is assigned.
+**Reception** : represents the reception of an incoming message. A unique identification is assigned.
 
-AS2 Message-ID : see Transmission id
+**AS2 Message-ID** : see Transmission id
 
-Transmission id : unique identification of a transmission between two access points. The value of the "Transmission ID"
+**Transmission id** : unique identification of a transmission between two access points. The value of the "Transmission ID"
  can be found in the AS2 Message-ID header.
 
  

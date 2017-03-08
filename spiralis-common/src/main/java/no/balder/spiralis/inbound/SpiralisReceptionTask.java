@@ -49,6 +49,8 @@ public class SpiralisReceptionTask {
         if (payloadPath == null) {
             throw new IllegalStateException("No payload file found in list of associated files: " + associatedFiles);
         }
+        
+        sendersApId = inboundMetadata.getCertificate().getSubjectDN().toString();
     }
 
     public ReceptionId getReceptionId() {
@@ -84,6 +86,6 @@ public class SpiralisReceptionTask {
     }
 
     public String getSendersApId() {
-        return inboundMetadata.getCertificate().getSubjectDN().toString();
+        return sendersApId;
     }
 }

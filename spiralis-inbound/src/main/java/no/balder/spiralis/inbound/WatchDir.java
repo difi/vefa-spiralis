@@ -212,6 +212,7 @@ public class WatchDir {
 
                             // bumps the counter
                             processCount.incrementAndGet();
+                            LOGGER.debug("{} files added so far.", processCount.get());
                         }
                     } catch (InterruptedException e) {
                         throw new IllegalStateException("While processing " + child + "; " + e.getMessage(), e);

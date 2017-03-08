@@ -47,10 +47,11 @@ public class AzurePayloadUriRewriter implements PayloadUriRewriter {
 
 
     @Override
-    public URI rewrite(URI uriOfBlob, MessageMetaData messageMetaData) {
+    public URI rewrite(URI uriOfBlob) {
         if (uriOfBlob == null) {
             throw new IllegalArgumentException("Required argument URI is null");
         }
+
         return azurePayloadStore.createUriWithAccessToken(uriOfBlob);
     }
 }

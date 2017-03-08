@@ -103,6 +103,10 @@ public class ReceptionPathUtil {
     }
 
     public static String fileNameBodyPart(Path path) {
+        if (path == null) {
+            throw new IllegalArgumentException("No path supplied by caller");
+        }
+
         final String fileName = path.getFileName().toString();
         Matcher m = baseFilePattern.matcher(fileName);
         if (m.find()) {

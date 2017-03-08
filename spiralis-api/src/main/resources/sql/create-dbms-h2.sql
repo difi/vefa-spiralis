@@ -79,6 +79,7 @@ CREATE TABLE `message` (
   `instance_id` varchar(64) comment 'Instance identifier from SBDH',
   `document_id` varchar(256) NOT NULL COMMENT 'document type id',
   `process_id` varchar(128) DEFAULT NULL COMMENT 'Process type id',
+  `remote_host` VARCHAR (256) DEFAULT NULL comment 'URI of receiving outbound host',
   `ap_name` varchar(128) DEFAULT NULL comment 'CN of certificate of sending access point' ,
   `payload_url` varchar(256) not null comment 'The URL of the message payload, the xml document',
   `evidence_url` varchar(256) default null comment 'URL of the native receipt i.e. AS2 MDN',

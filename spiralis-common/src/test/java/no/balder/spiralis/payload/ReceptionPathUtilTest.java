@@ -49,6 +49,7 @@ public class ReceptionPathUtilTest {
         assertEquals(4, files.size());
     }
 
+    
     @Test
     public void testClassify() throws Exception {
 
@@ -59,6 +60,7 @@ public class ReceptionPathUtilTest {
         int receipt = 0;
         int payload = 0;
         int rem = 0;
+        int metajson = 0;
 
         for (Path path : stream) {
 
@@ -72,6 +74,9 @@ public class ReceptionPathUtilTest {
                     case REM_EVIDENCE:
                         rem++;
                         break;
+                    case META_JSON:
+                        metajson++;
+                        break;
                     case UNKNOWN:
                         unknown++;
                         break;
@@ -80,11 +85,11 @@ public class ReceptionPathUtilTest {
                 }
             }
 
-        assertEquals(unknown, 1, "Did not manage to classify the unknonw");
+        assertEquals(unknown, 1, "Did not manage to classify the unknown");
         assertEquals(receipt, 1, "Receipt not classified");
         assertEquals(payload, 1, "Payload not classified");
         assertEquals(rem, 1, "REM not classified");
-
+        assertEquals(metajson, 1,"Meta JSON not classified");
     }
 
 
@@ -148,6 +153,12 @@ public class ReceptionPathUtilTest {
         final String transmissionId = "1234.2.14899972.javaMail.steinar_mac3.local";
         final String s = ReceptionPathUtil.fileNameBodyPart(Paths.get("/root", "ding", "dong", transmissionId + WellKnownFileTypeSuffix.PAYLOAD.getSuffix()));
         assertEquals(s, transmissionId);
+
+        final Path path = Paths.get("/var/peppol/IN/9908_971589671/9908_976098897/34037037.33235.1488200339513.JavaMail.steinar_macsteinar3.local.doc.xml");
+        final String s1 = ReceptionPathUtil.fileNameBodyPart(path);
+        assertNotNull(s1);
+        assertEquals(s1, "34037037.33235.1488200339513.JavaMail.steinar_macsteinar3.local");
+
     }
 
     @Test

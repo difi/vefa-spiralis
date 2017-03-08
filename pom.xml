@@ -7,10 +7,6 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>spiralis-api</module>
-        <module>spiralis-validator</module>
-<!--
-        <module>spiralis-core</module>
--->
         <module>oxalis-plugin</module>
         <module>azureblob</module>
         <module>spiralis-inbound</module>
@@ -26,7 +22,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
         <ringo.version>1.1.28-SNAPSHOT</ringo.version>
-        <oxalis.version>4.0.0-RC2-SNAPSHOT</oxalis.version>
+        <oxalis.version>4.0.0-RC2</oxalis.version>
+        <vefa.peppol.groupId>no.difi.vefa</vefa.peppol.groupId>
+        <vefa.peppol.version>0.9.7</vefa.peppol.version>
     </properties>
 
     <dependencyManagement>
@@ -137,9 +135,9 @@
             </dependency>
 
             <dependency>
-                <groupId>no.difi.vefa</groupId>
+                <groupId>${vefa.peppol.groupId}</groupId>
                 <artifactId>peppol-sbdh</artifactId>
-                <version>0.9.7-SNAPSHOT</version>
+                <version>${vefa.peppol.version}</version>
             </dependency>
 
             <dependency>
@@ -166,7 +164,6 @@
     </dependencyManagement>
 
     <dependencies>
-
         <dependency>
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>

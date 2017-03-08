@@ -29,6 +29,19 @@ public class BlobName {
 
     public static String createInboundBlobName(ReceptionId receptionId, Date timeStamp, ParticipantIdentifier sender, Path path) {
 
+        if (receptionId == null) {
+            throw new IllegalArgumentException("receptionId required");
+        }
+        if (timeStamp == null) {
+            throw new IllegalArgumentException("timeStamp required");
+        }
+        if (sender == null) {
+            throw new IllegalArgumentException("sender required");
+        }
+        if (path == null) {
+            throw new IllegalArgumentException("path required");
+        }
+
         String isoDateTime = dateTimeFormatter.format(LocalDateTime.ofInstant(timeStamp.toInstant(), ZoneId.systemDefault()));
         final String senderValue = sender.getIdentifier().toString().replace(":","_");
 

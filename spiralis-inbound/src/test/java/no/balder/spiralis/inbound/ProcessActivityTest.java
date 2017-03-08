@@ -6,6 +6,7 @@ import no.balder.spiralis.config.SpiralisConfigProperty;
 import no.balder.spiralis.config.SpiralisInboundTestModuleFactory;
 import no.balder.spiralis.jdbc.SpiralisTaskPersister;
 import no.balder.spiralis.payload.AzurePayloadStore;
+import no.balder.spiralis.payload.WellKnownFileTypeSuffix;
 import no.balder.spiralis.testutil.DummyFiles;
 import no.balder.spiralis.tool.gson.GsonHelper;
 import no.balder.spiralis.transport.ReceptionMetaData;
@@ -142,6 +143,37 @@ public class ProcessActivityTest {
 
         // TODO: Verify contents of Blob store
         
+    }
+
+    @Test
+    public void missingRemEvidenceHandled() throws Exception {
+
+        final List<Path> paths = DummyFiles.locateJsonMetaData(rootPath);
+        final List<Path> jsonMetaData = DummyFiles.locateJsonMetaData(rootPath);
+        final Path remPath = DummyFiles.locateFiles(rootPath, WellKnownFileTypeSuffix.REM_EVIDENCE).get(0);
+        assertNotNull(remPath);
+        Files.delete(remPath);  // Removes the REM evidence file to trigger the handling
+
+        // Creates the SpiralisReceptionTask based upon the contents in the sample dummy files
+        final SpiralisReceptionTask spiralisReceptionTask = SpiralisTaskFactory.insepctInbound(paths.get(0));
+
+        final BlockingQueue<SpiralisReceptionTask> blockingQueue = new LinkedBlockingQueue<>();
+
+        final String azureConnectionString = config.getString(SpiralisConfigProperty.SPIRALIS_AZURE_CONNECT);
+        final AzurePayloadStore payloadStore = new AzurePayloadStore(azureConnectionString);
+
+        final Path archive = Files.createTempDirectory("ARCHIVE");
+
+        final ProcessActivity processActivity = new ProcessActivity(blockingQueue, payloadStore, spiralisTaskPersister, rootPath, archive);
+        processActivity.startThreads();
+
+        blockingQueue.put(spiralisReceptionTask);   // Insert the test data on the queue
+
+        // Waits for the task to be processed....
+        long start = System.currentTimeMillis();
+        do {
+            Thread.sleep(1000);
+        } while (processActivity.getProcessedCounter() == 0 && System.currentTimeMillis() < start + 10000);
 
 
     }

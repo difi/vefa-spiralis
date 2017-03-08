@@ -65,6 +65,7 @@ public class AzurePayloadStore implements PayloadStore {
         if (uriOfBlob == null) {
             throw new IllegalArgumentException("Required argument 'uriOfBlob' is null");
         }
+        LOGGER.debug("Adding SAS token for {}", uriOfBlob);
         String blobUri =null ;
         try {
             final CloudBlockBlob blob = new CloudBlockBlob(uriOfBlob, blobClient.getCredentials());
@@ -76,6 +77,7 @@ public class AzurePayloadStore implements PayloadStore {
 
             // Creates the complete second URI with SAS token
             blobUri = blob.getUri().toString() + "?" + sas2;
+            LOGGER.debug("Returning {}", blobUri);
             return new URI(blobUri);
         } catch (StorageException e) {
             throw new IllegalArgumentException("Unable to create block blob reference for " + uriOfBlob, e);

@@ -1,8 +1,6 @@
 package no.balder.spiralis.payload;
 
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,47 +13,26 @@ class ContainerUtil {
 
 
     /**
-     * Computes the name of the container into which this file should be uploaded by digesting
-     * the filename part of the path, digesting with SHA-1, creating a long from the first 7 bytes
-     * which is finally modulus calculated.
-     *
+     * Computes the name of the container into which this file should be uploaded.
      * <p>
-     *     The base file name used as input is the file name only, less any extension, i.e.
-     *     <pre>
+     * The base file name used as input is the file name only, less any extension, i.e.
+     * <pre>
      *         /var/peppol/IN/9908_971589671/9908_848382922/2017-01-10/17524837-551a-4316-b3a3-feb9ebd84ac0-doc.xml
      *     </pre>
-     *     would yield {@code 17524837-551a-4316-b3a3-feb9ebd84ac0} as the input to the digestion algorithm.
      * </p>
      *
      * @param path
      * @return
      */
     static String containerNameFor(Path path) {
-
-        MessageDigest sha1 = null;
-        try {
-            sha1 = MessageDigest.getInstance("SHA-1");  // Not thread safe
-            String filenameOnly = getBaseFileNameOnly(path); // Rip of extension and any prefixes
-
-
-            final byte[] digest = sha1.digest(filenameOnly.getBytes());
-
-            long l = bytesToLong(digest,7);
-            l = (l % 29);
-
-            return String.format("peppol-ap-%02d",(int)l);
-
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-1 not supported in this Java runtime. " + e.getMessage(), e);
-        }
+        return "peppol-ap";
     }
 
     /**
-     *
      * @param path
      * @return
      */
-    static String getBaseFileNameOnly(Path path) {               
+    static String getBaseFileNameOnly(Path path) {
         // Extracts the filename part
         final Path fileName = path.getFileName();
 
