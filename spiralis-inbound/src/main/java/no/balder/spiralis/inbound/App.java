@@ -48,9 +48,8 @@ public class App {
         commandLineParser.parse(args);
 
         // Transfers commandline options into a new TypeSafe Config object.
-        Config config = commandLineParser.getConfig();
 
-        return config;
+        return commandLineParser.getConfig();
     }
 
 

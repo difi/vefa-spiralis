@@ -25,10 +25,12 @@ public class SpiralisPersisterHandler implements ReceiptPersister {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(SpiralisPersisterHandler.class);
 
+    @SuppressWarnings("SpringAutowiredFieldsWarningInspection")
     @Inject
     @Named("inbound")
     private Path inboundPath;
 
+    @SuppressWarnings("SpringAutowiredFieldsWarningInspection")
     @Inject
     @Named("default")
     private ReceiptPersister receiptPersister;

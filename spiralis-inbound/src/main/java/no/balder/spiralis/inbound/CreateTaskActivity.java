@@ -19,7 +19,6 @@ class CreateTaskActivity {
 
     private final BlockingQueue<Path> scannedTasksQueue;
     private final BlockingQueue<SpiralisReceptionTask> createdTasksQueue;
-    private ExecutorService processingExecutorService;
     private int threadNumber=0;
     private AtomicLong processCount = new AtomicLong(0);
 
@@ -42,7 +41,7 @@ class CreateTaskActivity {
      */
     private void startTaskCreation(BlockingQueue<Path> scannedTasksQueue, BlockingQueue<SpiralisReceptionTask> createdTasksQueue) {
 
-        processingExecutorService = Executors.newFixedThreadPool(N_THREADS);
+        ExecutorService processingExecutorService = Executors.newFixedThreadPool(N_THREADS);
 
         // Every thread in the ExecutorService gets to execute a Callable worker.
         for (int i = 0; i < N_THREADS; i++) {
@@ -83,7 +82,6 @@ class CreateTaskActivity {
                     } catch (Exception e) {
                         LOGGER.warn("Unable to process " + path + ", reason:" + e.getMessage(), e);
                         LOGGER.info("Continuing processing");
-                        continue;
                     }
                 }
             }

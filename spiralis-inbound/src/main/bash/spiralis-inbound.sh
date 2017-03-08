@@ -27,17 +27,17 @@ with the [-a|--archive] option once they have been processed.
 
 The program will run as a background process.
 
-stdout and stderr is written to $NOHUP_OUT
+stdout and stderr is written to ${NOHUP_OUT}
 
-The logback configuration file is read from $LOGBACK_CONF
+The logback configuration file is read from ${LOGBACK_CONF}
 
     Usage:
 
     `basename $0` [--archive archive_dir] [--directory input_dir] [--glob glob_pattern]
 
-    Default glob_pattern : $GLOB
-    Default input dir    : $INPUT_DIR
-    Default archive dir  : $ARCHIVE_DIR
+    Default glob_pattern : ${GLOB}
+    Default input dir    : ${INPUT_DIR}
+    Default archive dir  : ${ARCHIVE_DIR}
 
 EOT
 
@@ -71,7 +71,7 @@ function start {
 
     check_runtime_environment
 
-    if [ -r $PIDFILE ]
+    if [ -r ${PIDFILE} ]
     then
         echo "ERROR: $PIDFILE exists"
         echo "This indicates that another instance is running"
@@ -80,17 +80,17 @@ function start {
     fi
 
     nohup java -Dlogback.configurationFile=$HOME/.spiralis/logback-spiralis-app.xml \
-        -jar $JAR  \
+        -jar ${JAR}  \
         --archive /var/peppol/ARCHIVE --directory /var/peppol/IN --glob "**.meta.json" >$HOME/logs/spiralis-nohup.out 2>&1 &
 
     PID=$!
     RC=$?
 
-    if [ $RC != 0 ]
+    if [ ${RC} != 0 ]
     then
         echo "Execution failed"
     else
-        echo $PID >$PIDFILE
+        echo ${PID} >${PIDFILE}
         echo "PID written to $PIDFILE"
     fi
 
@@ -110,7 +110,7 @@ while [[ $# -gt 0 ]]
 do
     key="$1"
 
-    case $key in
+    case ${key} in
         -a|--archive)
             ARCHIVE_DIR="$2"
             if [ ! -r "$ARCHIVE_DIR" ]; then

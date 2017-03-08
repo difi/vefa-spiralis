@@ -48,7 +48,7 @@ public class CommandLineParserTest {
         OptionSet options = commandLineParser.parse(new String[]{});
         
         options = commandLineParser.parse(new String[]{});
-        assertTrue(options.has("directory") == false);
+        assertTrue(!options.has("directory"));
     }
 
     @Test

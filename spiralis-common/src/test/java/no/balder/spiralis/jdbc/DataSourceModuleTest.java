@@ -107,7 +107,7 @@ public class DataSourceModuleTest {
         if ("steinar".equals(System.getProperty("user.name"))) {
             final Injector injector = Guice.createInjector(new SpiralisConfigurationModule(ConfigFactory.empty()), new DataSourceModule());
             final DataSource dataSource = injector.getInstance(DataSource.class);
-            assertTrue(dataSource.getConnection().getMetaData().getURL().contains(":mem:") == false);
+            assertTrue(!dataSource.getConnection().getMetaData().getURL().contains(":mem:"));
 
             final ResultSet tables = dataSource.getConnection().getMetaData().getTables(null, null, null, null);
             assertNotNull(tables);

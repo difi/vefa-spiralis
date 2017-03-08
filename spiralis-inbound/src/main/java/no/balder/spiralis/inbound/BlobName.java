@@ -25,7 +25,7 @@ import java.util.function.Supplier;
  */
 public class BlobName {
 
-    private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-MM-ss");;
+    private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-MM-ss");
 
     public static String createInboundBlobName(ReceptionId receptionId, Date timeStamp, ParticipantIdentifier sender, Path path) {
 

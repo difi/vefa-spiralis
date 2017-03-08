@@ -140,6 +140,7 @@ public class DataSourceFactoryDbcpImpl implements DataSourceFactoryDbcp {
         genericObjectPool.setTimeBetweenEvictionRunsMillis(60 * 60 * 1000);      // Test every hour
 
         // Creates the actual DataSource instance
+        //noinspection unchecked
         return new PoolingDataSource(genericObjectPool);
     }
 

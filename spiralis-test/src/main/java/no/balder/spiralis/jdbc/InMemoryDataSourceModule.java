@@ -49,7 +49,7 @@ public class InMemoryDataSourceModule extends AbstractModule{
     }
 
     private static void createDatabaseSchema(DataSource ds) {
-        try (InputStream resourceAsStream = InMemoryDataSourceModule.class.getClassLoader().getResourceAsStream(CREATE_RINGO_DBMS_H2_SQL);){
+        try (InputStream resourceAsStream = InMemoryDataSourceModule.class.getClassLoader().getResourceAsStream(CREATE_RINGO_DBMS_H2_SQL)){
             RunScript.execute(ds.getConnection(), new InputStreamReader(resourceAsStream, Charset.forName("UTF-8")));
             LOGGER.info("Created in memory database with complete schema ....");
         } catch (SQLException e) {

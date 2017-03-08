@@ -125,6 +125,7 @@ public class SpiralisTaskPersisterImpl implements SpiralisTaskPersister {
                 try {
                     con.close();
                 } catch (SQLException e) {
+                    //noinspection ThrowFromFinallyBlock
                     throw new IllegalStateException("Unable to close connection " + e.getMessage(), e);
                 }
         }

@@ -51,11 +51,7 @@ public class ReceptionPathUtil {
 
             @Override
             public boolean accept(Path entry) throws IOException {
-                if (entry.getFileName().toString().startsWith(fileNameBodyPart)) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return entry.getFileName().toString().startsWith(fileNameBodyPart);
             }
         };
 

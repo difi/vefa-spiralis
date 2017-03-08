@@ -33,7 +33,6 @@ class ProcessActivity {
     private final Path inboundRootPath;
     private final Path archivePath;
     int threadNumber = 0;
-    private ExecutorService executorService;
     private AtomicLong processCount = new AtomicLong(0);
 
     @Inject
@@ -55,7 +54,7 @@ class ProcessActivity {
 
     private void startProcessActivity(BlockingQueue<SpiralisReceptionTask> createdTasksQueue) {
 
-        executorService = Executors.newFixedThreadPool(N_THREADS);
+        ExecutorService executorService = Executors.newFixedThreadPool(N_THREADS);
 
         for (int i = 0; i < N_THREADS; i++) {
             executorService.submit(createSpiralisTaskProcessor(createdTasksQueue));
@@ -89,10 +88,10 @@ class ProcessActivity {
                         } else
                             LOGGER.warn("No evidence found for {}", spiralisReceptionTask.getPayloadPath());
 
-                        final List<Path> uploadedPaths = Arrays.asList(new Path[]{spiralisReceptionTask.getPayloadPath(), spiralisReceptionTask.getRemEvidencePath()});
-                        final List<Path> remaining = new ArrayList(spiralisReceptionTask.getAssociatedFiles());
+                        final List<Path> uploadedPaths = Arrays.asList(spiralisReceptionTask.getPayloadPath(), spiralisReceptionTask.getRemEvidencePath());
+                        @SuppressWarnings("unchecked") final List<Path> remaining = new ArrayList(spiralisReceptionTask.getAssociatedFiles());
                         final boolean removalPerformed = remaining.removeAll(uploadedPaths);
-                        if (removalPerformed == false) {
+                        if (!removalPerformed) {
                             throw new IllegalStateException("Unable to create list of remaining paths to be uploaded");
                         }
 

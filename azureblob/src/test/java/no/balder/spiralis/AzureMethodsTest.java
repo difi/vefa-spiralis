@@ -43,8 +43,8 @@ public class AzureMethodsTest {
     private URL sampleInvoiceURLOnLocalDisk;
 
 
-    private final static SharedAccessBlobPolicy createSharedAccessPolicy(EnumSet<SharedAccessBlobPermissions> sap,
-                                                                         int expireTimeInSeconds) {
+    private static SharedAccessBlobPolicy createSharedAccessPolicy(EnumSet<SharedAccessBlobPermissions> sap,
+                                                                   int expireTimeInSeconds) {
 
         Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
         cal.setTime(new Date());
@@ -191,9 +191,8 @@ public class AzureMethodsTest {
             container.createIfNotExists();
 
             // Upload an invoice
-            final String blobName = SAMPLE_INVOICE_XML;
 
-            CloudBlockBlob blob = container.getBlockBlobReference(blobName);
+            CloudBlockBlob blob = container.getBlockBlobReference(SAMPLE_INVOICE_XML);
             File sourceFile = new File(sampleInvoiceURLOnLocalDisk.toURI());
             assertTrue(sourceFile.canRead(), "No read access to " + sampleInvoiceURLOnLocalDisk);
 

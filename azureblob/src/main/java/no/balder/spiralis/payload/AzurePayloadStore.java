@@ -88,8 +88,8 @@ public class AzurePayloadStore implements PayloadStore {
         }
     }
 
-    private final static SharedAccessBlobPolicy createSharedAccessPolicy(EnumSet<SharedAccessBlobPermissions> sap,
-                                                                         int expireTimeInSeconds) {
+    private static SharedAccessBlobPolicy createSharedAccessPolicy(EnumSet<SharedAccessBlobPermissions> sap,
+                                                                   int expireTimeInSeconds) {
 
         Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
         cal.setTime(new Date());

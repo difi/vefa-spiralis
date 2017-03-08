@@ -23,7 +23,6 @@ class FileFinder extends SimpleFileVisitor<Path> {
 
 
     private final Path root;
-    private final String pattern;
     private final BlockingQueue<Path> queue;
     private PathMatcher pathMatcher;
 
@@ -32,7 +31,7 @@ class FileFinder extends SimpleFileVisitor<Path> {
     public FileFinder(Path root, String pattern, BlockingQueue<Path> queue) {
 
         this.root = root;
-        this.pattern = pattern;
+        String pattern1 = pattern;
         this.queue = queue;
 
         pathMatcher = FileSystems.getDefault().getPathMatcher(pattern);
