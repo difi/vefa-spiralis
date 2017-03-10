@@ -40,6 +40,8 @@ Spiralis consists of two major components, working together:
     into the local file system in a format suitable for later processing.
  1. *spiralis-inbound*; reads the data produced by *oxalis-plugin* and performs the processing.
 
+In addition there is the `azureblob`, which is a plugin for the Ringo-server, allowing content stored in Microsoft Azure
+to be retrieved and downloaded.
 
 ## Oxalis-plugin
 
