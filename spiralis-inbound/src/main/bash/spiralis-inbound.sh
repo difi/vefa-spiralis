@@ -79,9 +79,9 @@ function start {
         exit 4
     fi
 
-    nohup java -Dlogback.configurationFile=$HOME/.spiralis/logback-spiralis-app.xml \
+    nohup java -Dlogback.configurationFile=${LOGBACK_CONF} \
         -jar ${JAR}  \
-        --archive /var/peppol/ARCHIVE --directory /var/peppol/IN --glob "**.meta.json" >$HOME/logs/spiralis-nohup.out 2>&1 &
+        --archive ${ARCHIVE_DIR} --directory ${INPUT_DIR} --glob "**.meta.json" >${NOHUP_OUT} 2>&1 &
 
     PID=$!
     RC=$?

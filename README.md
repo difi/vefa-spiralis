@@ -19,7 +19,7 @@ from the network.
 Back-end --> | Reception | --> | Processing | --> | Transmission | --> PEPPOL
              +-----------+     +------------+     +--------------+
 
-                                I N B O U N D
+                                   I N B O U N D
              +--------------+     +------------+     +-----------+
 Back-end <-- | Transmission | <-- | Processing | <-- | Reception | <-- PEPPOL
              +--------------+     +------------+     +-----------+
