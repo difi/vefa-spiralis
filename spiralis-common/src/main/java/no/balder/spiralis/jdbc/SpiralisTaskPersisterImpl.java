@@ -92,11 +92,11 @@ public class SpiralisTaskPersisterImpl implements SpiralisTaskPersister {
 
 
             if (spiralisReceptionTask.getInboundMetadata().getTransmissionIdentifier() != null) {
-                ps.setString(12, spiralisReceptionTask.getInboundMetadata().getTransmissionIdentifier().getValue());
+                ps.setString(12, spiralisReceptionTask.getInboundMetadata().getTransmissionIdentifier().getIdentifier());
             } else
                 ps.setString(12, null);
 
-            ps.setString(13, spiralisReceptionTask.getInboundMetadata().getHeader().getIdentifier().getValue());
+            ps.setString(13, spiralisReceptionTask.getInboundMetadata().getHeader().getIdentifier().getIdentifier());
 
             final String receiverOrgNo = spiralisReceptionTask.getInboundMetadata().getHeader().getReceiver().getIdentifier().toString();
             ps.setString(14, receiverOrgNo);

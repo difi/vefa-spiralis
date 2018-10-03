@@ -2,6 +2,7 @@ package no.balder.spiralis.tool;
 
 import no.difi.oxalis.api.inbound.InboundMetadata;
 import no.difi.oxalis.api.model.TransmissionIdentifier;
+import no.difi.oxalis.api.tag.Tag;
 import no.difi.vefa.peppol.common.code.DigestMethod;
 import no.difi.vefa.peppol.common.model.*;
 
@@ -114,6 +115,12 @@ public class ObjectMother {
             public X509Certificate getCertificate() {
                 return ObjectMother.sampleCertificate();
             }
+
+			@Override
+			public Tag getTag() {
+				// FIXME
+				return Tag.of("SomeTag");
+			}
         };
     }
 

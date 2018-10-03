@@ -7,6 +7,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 import no.difi.oxalis.api.inbound.InboundMetadata;
 import no.difi.oxalis.api.model.TransmissionIdentifier;
+import no.difi.oxalis.api.tag.Tag;
 import no.difi.vefa.peppol.common.model.*;
 
 import java.io.ByteArrayInputStream;
@@ -90,6 +91,12 @@ class InboundMetaDataDeserializer implements JsonDeserializer<InboundMetadata> {
                 public Receipt primaryReceipt() {
                     return getJson(j, ctx, "primaryReceipt", Receipt.class);
                 }
+
+				@Override
+				public Tag getTag() {
+					// FIXME
+					return Tag.NONE;
+				}
             };
         }
     }
