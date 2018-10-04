@@ -116,11 +116,10 @@ public class ObjectMother {
                 return ObjectMother.sampleCertificate();
             }
 
-			@Override
-			public Tag getTag() {
-				// FIXME
-				return Tag.of("SomeTag");
-			}
+            @Override
+            public Tag getTag() {
+                return Tag.of("SomeTag");
+            }
         };
     }
 

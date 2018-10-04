@@ -92,11 +92,11 @@ class InboundMetaDataDeserializer implements JsonDeserializer<InboundMetadata> {
                     return getJson(j, ctx, "primaryReceipt", Receipt.class);
                 }
 
-				@Override
-				public Tag getTag() {
-					// FIXME
-					return Tag.NONE;
-				}
+                @Override
+                public Tag getTag() {
+                    //FIXME
+                    return Tag.NONE;
+		}
             };
         }
     }
